@@ -1,19 +1,24 @@
 package com.arclights.models;
 
+import javafx.geometry.Point2D;
+
 public class Sniper extends Operator {
-    
-    // Grid coordinates instead of pixel coordinates
-    public double gridX, gridY;
-
     public Sniper(double gridX, double gridY) {
-        // HP=500, ATK=25, Range=3 tiles, Cooldown=60 frames (~1 attack per second)
-        super(gridX, gridY, 500, 25, 3, 60);
-        this.gridX = gridX;
-        this.gridY = gridY;
-    }
-
-    @Override
-    public void update() {
-        super.update(); // Handles attack cooldown timers automatically
+        super(gridX, gridY, 800, 70, 1, AttackType.PHYSICAL, 45, 0, 20, false);
+        
+        // Arknights Sniper Range (Facing East standard blueprint):
+        // [X][#][#][#]
+        // [X][O][#][#]
+        // [X][#][#][#]
+        this.relativeRangeOffsets.add(new Point2D(0, 0));  // Own tile
+        this.relativeRangeOffsets.add(new Point2D(1, -1)); // Row above, 1 out
+        this.relativeRangeOffsets.add(new Point2D(1, 0));  // Row center, 1 out
+        this.relativeRangeOffsets.add(new Point2D(1, 1));  // Row below, 1 out
+        this.relativeRangeOffsets.add(new Point2D(2, -1)); // Row above, 2 out
+        this.relativeRangeOffsets.add(new Point2D(2, 0));  // Row center, 2 out
+        this.relativeRangeOffsets.add(new Point2D(2, 1));  // Row below, 2 out
+        this.relativeRangeOffsets.add(new Point2D(3, -1)); // Row above, 3 out
+        this.relativeRangeOffsets.add(new Point2D(3, 0));  // Row center, 3 out
+        this.relativeRangeOffsets.add(new Point2D(3, 1));  // Row below, 3 out
     }
 }

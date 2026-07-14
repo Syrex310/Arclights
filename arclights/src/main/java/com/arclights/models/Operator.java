@@ -3,53 +3,91 @@ package com.arclights.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.geometry.Point2D;
+
 public class Operator extends GameEntity {
-    protected double range;
+    // 2026 Arclights Engine Direction Enum
+    public enum Direction {
+        NORTH, EAST, SOUTH, WEST
+    }
+
+    private final int gridX;
+    private final int gridY;
+    private Direction facing;
     private int attackCooldownTimer;
     private final List<Enemy> blockedEnemies = new ArrayList<>();
-
-    public Operator(double gridX, double gridY, double hp, double atk, double range, double attackInterval) {
-        // Compute center pixel coordinate of the designated tile
-        super(
-            gridX * (60 + 2) + 50 + 30,
-            gridY * (60 + 2) + 50 + 30,
-            hp,
-            atk,
-            1,
-            AttackType.PHYSICAL,
-            attackInterval,
-            0.0,
-            0.0,
-            true,
-            true                        
-        ); 
-        this.range = range;
-        this.attackCooldownTimer = 0;
-    }
+    protected List<Point2D> relativeRangeOffsets = new ArrayList<>(); // Collection of relative (col, row) offsets
 
     public Operator(double gridX, double gridY, double hp, double atk, int blockCount, 
                     AttackType attackType, double attackInterval, double resistance, 
-                    double defense, double range, boolean isGround) {
+                    double defense, boolean isGround) {
         super(
-            gridX * (60 + 2) + 50 + 30, 
-            gridY * (60 + 2) + 50 + 30, 
+            gridX * (62) + 50 + 30, 
+            gridY * (62) + 50 + 30, 
             hp, atk, blockCount, attackType, attackInterval, resistance, defense, true, isGround
         );
-        this.range = range;
+        this.gridX = (int) gridX;
+        this.gridY = (int) gridY;
         this.attackCooldownTimer = 0;
+        this.facing = Direction.EAST; // Default facing configuration
+    }
+
+    public void setFacing(Direction facing) {
+        this.facing = facing;
+    }
+
+    public Direction getFacing() {
+        return facing;
+    }
+
+    public int getGridX() { return gridX; }
+    public int getGridY() { return gridY; }
+
+    /**
+     * Converts relative range offsets into absolute grid coordinates based on the operator's current facing direction.
+     */
+    public List<Point2D> getAbsoluteRangeTiles() {
+        List<Point2D> absoluteTiles = new ArrayList<>();
+        for (Point2D offset : relativeRangeOffsets) {
+            double dx = offset.getX();
+            double dy = offset.getY();
+            double rotatedX = dx;
+            double rotatedY = dy;
+
+            // Rotate coordinates based on facing direction
+            switch (facing) {
+                case NORTH:
+                    rotatedX = -dy;
+                    rotatedY = -dx;
+                    break;
+                case SOUTH:
+                    rotatedX = dy;
+                    rotatedY = dx;
+                    break;
+                case WEST:
+                    rotatedX = -dx;
+                    rotatedY = -dy;
+                    break;
+                case EAST:
+                default:
+                    // Default layout blueprint is designed facing EAST
+                    break;
+            }
+
+            absoluteTiles.add(new Point2D(gridX + rotatedX, gridY + rotatedY));
+        }
+        return absoluteTiles;
     }
 
     public int getRemainingBlockCount() {
         int usedBlock = 0;
         for (Enemy enemy : blockedEnemies) {
-            usedBlock += enemy.getBlockCount(); // Deduct the enemy's specific block cost
+            usedBlock += enemy.getBlockCount();
         }
         return Math.max(0, getBlockCount() - usedBlock);
     }
 
-    // Pass the list of enemies into loop frame update
     public void update(List<Enemy> activeEnemies) {
-        // Rule: If the operator dies, release all currently blocked enemies so they can move again
         if (!isAlive()) {
             for (Enemy enemy : blockedEnemies) {
                 enemy.setBlocked(false);
@@ -58,76 +96,67 @@ public class Operator extends GameEntity {
             return;
         }
 
-        // Clean up any enemies that died during the last frame to free up block slots
         blockedEnemies.removeIf(enemy -> !enemy.isAlive());
 
-        // Handle Blocking Detection
+        // Melee units handle proximity blocking logic
         if (isGround()) {
             for (Enemy enemy : activeEnemies) {
-                // Skip dead enemies or ones already blocked by another operator
                 if (!enemy.isAlive() || enemy.isBlocked()) continue;
 
-                // Check distance to see if the enemy "meets" the operator (within 30 pixels / half tile)
                 double dx = enemy.getX() - this.getX();
                 double dy = enemy.getY() - this.getY();
                 double distance = Math.sqrt(dx * dx + dy * dy);
 
                 if (distance <= 30.0) {
-                    // Only block if remaining block capacity can fully absorb the enemy's block weight
                     if (getRemainingBlockCount() >= enemy.getBlockCount()) {
                         blockedEnemies.add(enemy);
                         enemy.setBlocked(true);
-                        System.out.println("Enemy blocked! Remaining Operator Block Capacity: " + getRemainingBlockCount());
+                        System.out.println("Enemy blocked! Remaining Block: " + getRemainingBlockCount());
                     }
-                    // If capacity is insufficient (e.g., remaining is 1, enemy requires 2), they pass right through
                 }
             }
         }   
 
-
         if (attackCooldownTimer > 0) {
             attackCooldownTimer--;
         } else {
-            // Tactical targeting: Prioritize attacking the enemies currently being blocked first.
             Enemy target = null;
             if (!blockedEnemies.isEmpty()) {
                 target = blockedEnemies.get(0);
             } else {
-                target = findTarget(activeEnemies); // Fallback to normal range scan if no one is blocked
+                target = findTargetInGridRange(activeEnemies);
             }
 
             if (target != null) {
                 target.takeDamage(getAtk(), getAttackType()); 
-                System.out.println("Operator attacked enemy! Enemy HP left: " + target.getHp()); 
+                System.out.println("Operator attacked enemy! Enemy HP: " + target.getHp()); 
                 attackCooldownTimer = (int) getAttackInterval(); 
             }
         }
     }
 
-    private Enemy findTarget(List<Enemy> activeEnemies) {
-        double maxPixelRange = this.range * 62; // Convert tile range to exact pixel radius
+    /**
+     * Scans enemies to see if their current pixel coordinate sits inside one of our active range tiles.
+     */
+    private Enemy findTargetInGridRange(List<Enemy> activeEnemies) {
+        List<Point2D> targetTiles = getAbsoluteRangeTiles();
 
         for (Enemy enemy : activeEnemies) {
             if (!enemy.isAlive()) continue;
 
-            // Simple Pythagorean distance check
-            double dx = enemy.getX() - this.getX();
-            double dy = enemy.getY() - this.getY();
-            double distance = Math.sqrt(dx * dx + dy * dy);
+            // Reverse map the pixel position back to raw grid indexes
+            int enemyGridX = (int) ((enemy.getX() - 50) / 62);
+            int enemyGridY = (int) ((enemy.getY() - 50) / 62);
 
-            if (distance <= maxPixelRange) {
-                return enemy;
+            for (Point2D tile : targetTiles) {
+                if ((int) tile.getX() == enemyGridX && (int) tile.getY() == enemyGridY) {
+                    return enemy;
+                }
             }
         }
-        return null; // No enemies in range
+        return null;
     }
 
     @Override
-    public void update() {
-        // Fallback
-    }
-
-    // Getter and Setter for Operator
-    public double getRange() { return range; }
-    public void setRange(double range) { this.range = range; }
+    public void update() {}
 }

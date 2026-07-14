@@ -1,22 +1,55 @@
 package com.arclights.models;
 
 public class Tile {
-    // 0 = Ground, 1 = High Ground, 2 = Enemy Path
-    private int type;
+    
+    public enum TileType {
+        MELEE_GROUND,      
+        RANGED_HIGH_GROUND, 
+        ENEMY_SPAWN,       
+        PLAYER_OBJECTIVE,  
+        HOLE_PIT           
+    }
+
+    public enum DeploymentType {
+        MELEE_ONLY,    
+        RANGED_ONLY,   
+        ANY,           
+        NONE           
+    }
+
+    private final TileType tileType;
+    private final DeploymentType deploymentType;
     private boolean isOccupied;
 
-    public Tile(int type) {
-        this.type = type;
+    public Tile(TileType tileType, DeploymentType deploymentType) {
+        this.tileType = tileType;
+        this.deploymentType = deploymentType;
         this.isOccupied = false;
     }
 
-    public int getType() { return type; }
-    
+    public boolean canPlaceMelee() {
+        if (isOccupied) return false;
+        return deploymentType == DeploymentType.MELEE_ONLY || deploymentType == DeploymentType.ANY;
+    }
+
+    public boolean canPlaceRanged() {
+        if (isOccupied) return false;
+        return deploymentType == DeploymentType.RANGED_ONLY || deploymentType == DeploymentType.ANY;
+    }
+
+    public boolean isWalkableForEnemies() {
+        return tileType == TileType.MELEE_GROUND 
+            || tileType == TileType.ENEMY_SPAWN 
+            || tileType == TileType.PLAYER_OBJECTIVE
+            || tileType == TileType.HOLE_PIT;
+    }
+
+    public boolean isEnemyPath() {
+        return tileType == TileType.ENEMY_SPAWN || tileType == TileType.PLAYER_OBJECTIVE;
+    }
+
+    public TileType getTileType() { return tileType; }
+    public DeploymentType getDeploymentType() { return deploymentType; }
     public boolean isOccupied() { return isOccupied; }
     public void setOccupied(boolean occupied) { this.isOccupied = occupied; }
-
-    // Helper methods to make rule validation incredibly clean later
-    public boolean canPlaceMelee() { return type == 0 && !isOccupied; }
-    public boolean canPlaceRanged() { return type == 1 && !isOccupied; }
-    public boolean isEnemyPath() { return type == 2; }
 }
