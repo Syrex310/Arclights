@@ -1,8 +1,10 @@
 package com.arclights;
 
+import com.arclights.handlers.InputController;
 import com.arclights.managers.DeploymentManager;
 import com.arclights.managers.EnemyManager;
 import com.arclights.models.GameMap;
+import com.arclights.models.MapPresets;
 import com.arclights.models.Tile;
 
 import javafx.animation.AnimationTimer;
@@ -21,7 +23,11 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         Pane root = new Pane();
-        GameMap gameMap = new GameMap();
+
+        GameMap map1 = new GameMap(MapPresets.LEVEL_1);
+        GameMap map2 = new GameMap(MapPresets.LEVEL_2);
+
+        GameMap gameMap = map2;
 
         EnemyManager enemyManager = new EnemyManager(root);
         DeploymentManager deploymentManager = new DeploymentManager(root);
@@ -71,6 +77,7 @@ public class App extends Application {
         defenderLabel.setLayoutY(15); defenderLabel.setLayoutX(25);
 
         HBox cardDeckDeck = new HBox(20, sniperGroup, defenderGroup);
+        // ... [Keep your layout and rendering code up to line 66] ...
 
         VBox controlDashboard = new VBox(10, statusLabel, cardDeckDeck);
         controlDashboard.setStyle("-fx-background-color: #222222; -fx-padding: 15px; -fx-background-radius: 5px;");
@@ -78,57 +85,43 @@ public class App extends Application {
         controlDashboard.setLayoutY(460);
         root.getChildren().add(controlDashboard);
 
-        // --- Event Handling State Machine Settings ---
+        // --- New Refactored Input Handling Call ---
+        InputController inputController = new InputController(deploymentManager, gameMap);
+        inputController.attachInputHandlers(root, sniperGroup, defenderGroup);
 
-        // 1. Initial Press hooks on the deployment items
-        sniperGroup.setOnMousePressed(event -> {
-            if (deploymentManager.getCurrentState() == DeploymentManager.SelectionState.NONE) {
-                deploymentManager.startDrag(DeploymentManager.SelectionState.DRAGGING_SNIPER);
-            }
-        });
-
-        defenderGroup.setOnMousePressed(event -> {
-            if (deploymentManager.getCurrentState() == DeploymentManager.SelectionState.NONE) {
-                deploymentManager.startDrag(DeploymentManager.SelectionState.DRAGGING_DEFENDER);
-            }
-        });
-
-        // Capture initial click point when player begins Phase 2 (Direction swipe)
-        root.setOnMousePressed(event -> {
-            if (deploymentManager.getCurrentState() == DeploymentManager.SelectionState.SELECTING_DIRECTION) {
-                deploymentManager.setDirectionDragStart(event.getX(), event.getY());
-            }
-        });
-
-        // 2. Continuous Drag processing across the master application container surface area
-        root.setOnMouseDragged(event -> {
-            DeploymentManager.SelectionState state = deploymentManager.getCurrentState();
-            if (state == DeploymentManager.SelectionState.DRAGGING_SNIPER || state == DeploymentManager.SelectionState.DRAGGING_DEFENDER) {
-                deploymentManager.updateDragPosition(event.getX(), event.getY(), gameMap);
-            } else if (state == DeploymentManager.SelectionState.SELECTING_DIRECTION) {
-                deploymentManager.handleDirectionDrag(event.getX(), event.getY());
-            }
-        });
-
-        // 3. Release drop processing configurations
-        root.setOnMouseReleased(event -> {
-            DeploymentManager.SelectionState state = deploymentManager.getCurrentState();
-            if (state == DeploymentManager.SelectionState.DRAGGING_SNIPER || state == DeploymentManager.SelectionState.DRAGGING_DEFENDER) {
-                deploymentManager.handleRelease(event.getX(), event.getY(), gameMap);
-            } else if (state == DeploymentManager.SelectionState.SELECTING_DIRECTION) {
-                // Instantly confirm deployment on direction release!
-                deploymentManager.confirmDeployment();
-            }
-        });
-
+        // Run engine clock configurations
         // Run engine clock configurations
         enemyManager.spawnEnemy();
 
         AnimationTimer gameLoop = new AnimationTimer() {
+            private long lastTime = 0;
+            private double accumulatedTime = 0;
+            
+            // 16.67 milliseconds is roughly 1 frame at 60 FPS (in nanoseconds)
+            private final double TARGET_FRAME_TIME = 16_666_666.0; 
+
             @Override
             public void handle(long now) {
-                enemyManager.update();
-                deploymentManager.update(enemyManager.getActiveEnemies());
+                if (lastTime == 0) {
+                    lastTime = now;
+                    return;
+                }
+
+                // Calculate actual time passed since last frame
+                long elapsedNano = now - lastTime;
+                lastTime = now;
+
+                // Multiply the elapsed real time by our game speed factor (1.0 or 0.1)
+                double speedMultiplier = deploymentManager.getGameSpeedMultiplier();
+                accumulatedTime += elapsedNano * speedMultiplier;
+
+                // Only update the game world physics/logic when enough "game time" has passed
+                while (accumulatedTime >= TARGET_FRAME_TIME) {
+                    enemyManager.update();
+                    deploymentManager.update(enemyManager.getActiveEnemies());
+                    
+                    accumulatedTime -= TARGET_FRAME_TIME;
+                }
             }
         };
         gameLoop.start();

@@ -217,6 +217,16 @@ public class DeploymentManager {
         rangePreviewNodes.clear();
     }
 
+    public double getGameSpeedMultiplier() {
+        // If the player is actively dragging a card or swiping a direction, drop speed to 0.1x
+        if (currentState == SelectionState.DRAGGING_SNIPER || 
+            currentState == SelectionState.DRAGGING_DEFENDER || 
+            currentState == SelectionState.SELECTING_DIRECTION) {
+            return 0.1; 
+        }
+        return 1.0; // Normal speed
+    }
+
     public void update(List<Enemy> activeEnemies) {
         for (Operator op : activeOperators) {
             op.update(activeEnemies);

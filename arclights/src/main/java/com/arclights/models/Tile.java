@@ -29,7 +29,7 @@ public class Tile {
 
     public boolean canPlaceMelee() {
         if (isOccupied) return false;
-        return deploymentType == DeploymentType.MELEE_ONLY || deploymentType == DeploymentType.ANY;
+        return (deploymentType == DeploymentType.MELEE_ONLY || deploymentType == DeploymentType.NONE) || deploymentType == DeploymentType.ANY;
     }
 
     public boolean canPlaceRanged() {

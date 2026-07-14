@@ -5,16 +5,11 @@ public class GameMap {
     private final int rows;
     private final int cols;
 
-    public GameMap() {
-        char[][] layout = {
-            {'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'},
-            {'S', 'G', 'G', 'G', 'M', 'M', 'M', 'H'},
-            {'H', 'H', 'H', 'G', 'M', 'H', 'M', 'H'},
-            {'H', 'H', 'H', 'G', 'G', 'G', 'G', 'O'},
-            {'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'},
-            {'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'}
-        };
-
+    // The constructor now dynamically accepts any 2D layout array
+    public GameMap(char[][] layout) {
+        if (layout == null || layout.length == 0) {
+            throw new IllegalArgumentException("Map layout cannot be empty.");
+        }
         this.rows = layout.length;
         this.cols = layout[0].length;
         this.grid = new Tile[rows][cols];
@@ -27,7 +22,6 @@ public class GameMap {
     }
 
     private Tile createTileFromChar(char type) {
-        // Classic switch statements safely supported by Java 11
         switch (type) {
             case 'H':
                 return new Tile(Tile.TileType.RANGED_HIGH_GROUND, Tile.DeploymentType.RANGED_ONLY);
@@ -38,7 +32,7 @@ public class GameMap {
             case 'O':
                 return new Tile(Tile.TileType.PLAYER_OBJECTIVE, Tile.DeploymentType.NONE);
             default:
-                return new Tile(Tile.TileType.MELEE_GROUND, Tile.DeploymentType.NONE); // 'G' 
+                return new Tile(Tile.TileType.MELEE_GROUND, Tile.DeploymentType.NONE); // 'G'
         }
     }
 
