@@ -1,4 +1,4 @@
-package com.arclights.models;
+package com.arclights.entity.operator;
 
 import javafx.geometry.Point2D;
 

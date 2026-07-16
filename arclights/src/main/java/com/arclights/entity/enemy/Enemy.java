@@ -1,6 +1,8 @@
-package com.arclights.models;
+package com.arclights.entity.enemy;
 
 import java.util.List;
+
+import com.arclights.entity.GameEntity;
 
 import javafx.geometry.Point2D;
 

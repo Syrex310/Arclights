@@ -1,7 +1,10 @@
-package com.arclights.models;
+package com.arclights.entity.operator;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.arclights.entity.GameEntity;
+import com.arclights.entity.enemy.Enemy;
 
 import javafx.geometry.Point2D;
 

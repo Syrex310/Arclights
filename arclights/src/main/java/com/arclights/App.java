@@ -1,5 +1,6 @@
 package com.arclights;
 
+import com.arclights.entity.enemy.EnemyType;
 import com.arclights.handlers.InputController;
 import com.arclights.managers.DeploymentManager;
 import com.arclights.managers.EnemyManager;
@@ -27,9 +28,9 @@ public class App extends Application {
         GameMap map1 = new GameMap(MapPresets.LEVEL_1);
         GameMap map2 = new GameMap(MapPresets.LEVEL_2);
 
-        GameMap gameMap = map2;
+        GameMap gameMap = map1;
 
-        EnemyManager enemyManager = new EnemyManager(root);
+        EnemyManager enemyManager = new EnemyManager(root, gameMap);
         DeploymentManager deploymentManager = new DeploymentManager(root);
 
         int tileSize = 60;
@@ -40,7 +41,7 @@ public class App extends Application {
             for (int col = 0; col < gameMap.getCols(); col++) {
                 Rectangle tileNode = new Rectangle(tileSize, tileSize);
                 Tile logicTile = gameMap.getTile(row, col);
-                
+
                 if (logicTile.getTileType() == Tile.TileType.RANGED_HIGH_GROUND) {
                     tileNode.setFill(Color.DARKGRAY);
                 } else if (logicTile.getTileType() == Tile.TileType.ENEMY_SPAWN) {
@@ -50,7 +51,7 @@ public class App extends Application {
                 } else if (logicTile.getDeploymentType() == Tile.DeploymentType.MELEE_ONLY) {
                     tileNode.setFill(Color.LIGHTGRAY);
                 } else {
-                    tileNode.setFill(Color.LIGHTPINK); 
+                    tileNode.setFill(Color.LIGHTPINK);
                 }
 
                 tileNode.setX(col * (tileSize + padding) + 50);
@@ -60,7 +61,8 @@ public class App extends Application {
         }
 
         // UI Header Text (Updated instructions to reflect double-drag mechanic)
-        Label statusLabel = new Label("Instructions: Drag card to map & release. Then drag & release on unit to set range & deploy!");
+        Label statusLabel = new Label(
+                "Instructions: Drag card to map & release. Then drag & release on unit to set range & deploy!");
         statusLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
 
         // Draggable Character Cards (Represented visually as styled UI boxes)
@@ -68,13 +70,15 @@ public class App extends Application {
         Label sniperLabel = new Label(" SNIPER ");
         sniperLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
         Pane sniperGroup = new Pane(sniperCard, sniperLabel);
-        sniperLabel.setLayoutY(15); sniperLabel.setLayoutX(35);
+        sniperLabel.setLayoutY(15);
+        sniperLabel.setLayoutX(35);
 
         Rectangle defenderCard = new Rectangle(130, 50, Color.BLUE);
         Label defenderLabel = new Label(" DEFENDER ");
         defenderLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
         Pane defenderGroup = new Pane(defenderCard, defenderLabel);
-        defenderLabel.setLayoutY(15); defenderLabel.setLayoutX(25);
+        defenderLabel.setLayoutY(15);
+        defenderLabel.setLayoutX(25);
 
         HBox cardDeckDeck = new HBox(20, sniperGroup, defenderGroup);
         // ... [Keep your layout and rendering code up to line 66] ...
@@ -90,15 +94,14 @@ public class App extends Application {
         inputController.attachInputHandlers(root, sniperGroup, defenderGroup);
 
         // Run engine clock configurations
-        // Run engine clock configurations
-        enemyManager.spawnEnemy();
+        enemyManager.spawnEnemy(EnemyType.BOSS);
 
         AnimationTimer gameLoop = new AnimationTimer() {
             private long lastTime = 0;
             private double accumulatedTime = 0;
-            
+
             // 16.67 milliseconds is roughly 1 frame at 60 FPS (in nanoseconds)
-            private final double TARGET_FRAME_TIME = 16_666_666.0; 
+            private final double TARGET_FRAME_TIME = 16_666_666.0;
 
             @Override
             public void handle(long now) {
@@ -119,7 +122,7 @@ public class App extends Application {
                 while (accumulatedTime >= TARGET_FRAME_TIME) {
                     enemyManager.update();
                     deploymentManager.update(enemyManager.getActiveEnemies());
-                    
+
                     accumulatedTime -= TARGET_FRAME_TIME;
                 }
             }
@@ -132,5 +135,7 @@ public class App extends Application {
         stage.show();
     }
 
-    public static void main(String[] args) { launch(); }
+    public static void main(String[] args) {
+        launch();
+    }
 }

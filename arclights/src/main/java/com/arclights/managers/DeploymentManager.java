@@ -3,11 +3,11 @@ package com.arclights.managers;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.arclights.models.Defender;
-import com.arclights.models.Enemy;
+import com.arclights.entity.enemy.Enemy;
+import com.arclights.entity.operator.Defender;
+import com.arclights.entity.operator.Operator;
+import com.arclights.entity.operator.Sniper;
 import com.arclights.models.GameMap;
-import com.arclights.models.Operator;
-import com.arclights.models.Sniper;
 import com.arclights.models.Tile;
 
 import javafx.geometry.Point2D;
