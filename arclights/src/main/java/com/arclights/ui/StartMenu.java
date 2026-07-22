@@ -32,7 +32,7 @@ public class StartMenu {
 
         ImageView bgView = null;
         try {
-            InputStream bgStream = StartMenu.class.getResourceAsStream("/com/arclights/background.png");
+            InputStream bgStream = StartMenu.class.getResourceAsStream("/com/arclights/background2.png");
             if (bgStream != null) {
                 Image bgImage = new Image(bgStream);
                 bgView = new ImageView(bgImage);
@@ -99,13 +99,13 @@ public class StartMenu {
         btnPanel.setLayoutX(850);
         btnPanel.setLayoutY(200);
 
-        Button terminalBtn = createMenuButton("TERMINAL", "CHOOSE OPERATION STAGE", "#ff9b00", 0, "");
+        Button terminalBtn = createMenuButton("TERMINAL", "CHOOSE OPERATION STAGE", "#ff9b00", 0);
         terminalBtn.setOnAction(e -> callbacks.onTerminalClick());
 
-        Button operatorsBtn = createMenuButton("OPERATORS", "SQUAD", "#cccccc", 0, "");
+        Button operatorsBtn = createMenuButton("OPERATORS", "SQUAD", "#cccccc", 0);
         operatorsBtn.setOnAction(e -> callbacks.onOperatorsClick());
 
-        Button exitBtn = createMenuButton("EXIT", "EXIT GAME", "#dc3545", 0, "");
+        Button exitBtn = createMenuButton("EXIT", "EXIT GAME", "#dc3545", 0);
         exitBtn.setOnAction(e -> callbacks.onExitClick());
 
         btnPanel.getChildren().addAll(terminalBtn, operatorsBtn, exitBtn);
@@ -113,10 +113,10 @@ public class StartMenu {
 
         //Test terminal ver 2
         VBox btnTerminal = new VBox(20);
-        btnTerminal.setLayoutX(700);
+        btnTerminal.setLayoutX(660);
         btnTerminal.setLayoutY(100);
 
-        Button terminalButton = createMenuButton("Test Terminal 2", "Sanity", "#ffffff", 0, 100, 500, "/com/arclights/ui/Menu/btn_battle.png");
+        Button terminalButton = createImageButton("/com/arclights/ui/Menu/btn_battle_refined2.png", 0, 600, 165);
         terminalButton.setOnAction(e -> callbacks.onTerminalClick());
         btnTerminal.getChildren().addAll(terminalButton);
         root.getChildren().add(btnTerminal);
@@ -124,8 +124,8 @@ public class StartMenu {
         return new Scene(root, 1280, 720);
     }
 
-    private static Button createMenuButton(String mainText, String subText, String accentColorHex, double translateX, String imagePath) {
-        return createMenuButton(mainText, subText, accentColorHex, translateX, 65, 280, null);
+    private static Button createMenuButton(String mainText, String subText, String accentColorHex, double translateX) {
+        return createMenuButton(mainText, subText, accentColorHex, translateX, 65, 280, "");
     }
 
     private static Button createMenuButton(String mainText, String subText, String accentColorHex, double translateX, double height, double width, String imagePath) {
@@ -186,6 +186,33 @@ public class StartMenu {
             btn.setStyle("-fx-background-color: #ffffff; -fx-padding: 20;");
         });
         btn.setStyle("-fx-background-color: #ffffff; -fx-padding: 20;");
+        return btn;
+    }
+
+    private static Button createImageButton(String imagePath, double translateX, double width, double height) {
+        Button btn = new Button();
+        btn.setPrefSize(width, height);
+        btn.setTranslateX(translateX);
+
+        InputStream imgStream = StartMenu.class.getResourceAsStream(imagePath);
+        if (imgStream != null) {
+            ImageView imgView = new ImageView(new Image(imgStream));
+            imgView.setFitWidth(width);
+            imgView.setFitHeight(height);
+            btn.setGraphic(imgView);
+        }
+
+        btn.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
+
+        btn.setOnMouseEntered(e -> {
+            btn.setOpacity(0.8);
+            btn.setTranslateX(translateX - 5);
+        });
+        btn.setOnMouseExited(e -> {
+            btn.setOpacity(1.0);
+            btn.setTranslateX(translateX);
+        });
+
         return btn;
     }
 }
