@@ -140,17 +140,13 @@ public class DeploymentManager {
         clearRangePreview();
     }
 
-    /**
-     * Set the origin point of the swipe selection when clicking/pressing during Phase 2.
-     */
+
     public void setDirectionDragStart(double x, double y) {
         this.directionStartX = x;
         this.directionStartY = y;
     }
 
-    /**
-     * Calculates the drag angle relative to the start coordinates to update the operator's orientation.
-     */
+
     public void handleDirectionDrag(double mouseX, double mouseY) {
         if (currentState != SelectionState.SELECTING_DIRECTION || pendingOperator == null) return;
 
@@ -185,7 +181,6 @@ public class DeploymentManager {
         pendingTile.setOccupied(true);
         activeOperators.add(pendingOperator);
 
-        // Reset state values cleanly
         currentState = SelectionState.NONE;
         pendingOperator = null;
         pendingTile = null;

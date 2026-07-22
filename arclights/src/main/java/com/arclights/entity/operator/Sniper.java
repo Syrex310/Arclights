@@ -6,10 +6,7 @@ public class Sniper extends Operator {
     public Sniper(double gridX, double gridY) {
         super(gridX, gridY, 800, 70, 1, AttackType.PHYSICAL, 45, 0, 20, false);
         
-        // Arknights Sniper Range (Facing East standard blueprint):
-        // [X][#][#][#]
-        // [X][O][#][#]
-        // [X][#][#][#]
+
         this.relativeRangeOffsets.add(new Point2D(0, 0));  // Own tile
         this.relativeRangeOffsets.add(new Point2D(1, -1)); // Row above, 1 out
         this.relativeRangeOffsets.add(new Point2D(1, 0));  // Row center, 1 out

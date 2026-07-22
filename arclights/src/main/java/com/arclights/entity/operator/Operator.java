@@ -9,7 +9,6 @@ import com.arclights.entity.enemy.Enemy;
 import javafx.geometry.Point2D;
 
 public class Operator extends GameEntity {
-    // 2026 Arclights Engine Direction Enum
     public enum Direction {
         NORTH, EAST, SOUTH, WEST
     }
@@ -46,9 +45,7 @@ public class Operator extends GameEntity {
     public int getGridX() { return gridX; }
     public int getGridY() { return gridY; }
 
-    /**
-     * Converts relative range offsets into absolute grid coordinates based on the operator's current facing direction.
-     */
+
     public List<Point2D> getAbsoluteRangeTiles() {
         List<Point2D> absoluteTiles = new ArrayList<>();
         for (Point2D offset : relativeRangeOffsets) {
@@ -138,9 +135,7 @@ public class Operator extends GameEntity {
         }
     }
 
-    /**
-     * Scans enemies to see if their current pixel coordinate sits inside one of our active range tiles.
-     */
+
     private Enemy findTargetInGridRange(List<Enemy> activeEnemies) {
         List<Point2D> targetTiles = getAbsoluteRangeTiles();
 

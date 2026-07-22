@@ -5,7 +5,6 @@ public class GameMap {
     private final int rows;
     private final int cols;
 
-    // The constructor now dynamically accepts any 2D layout array
     public GameMap(char[][] layout) {
         if (layout == null || layout.length == 0) {
             throw new IllegalArgumentException("Map layout cannot be empty.");

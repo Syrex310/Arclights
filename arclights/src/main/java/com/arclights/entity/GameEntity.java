@@ -46,23 +46,22 @@ public abstract class GameEntity {
     public abstract void update();
 
     public void takeDamage(double damage, AttackType attackType) {
-        if (!isAlive()) return; // Already dead[cite: 1]
+        if (!isAlive()) return;
 
         double mitigation = (attackType == AttackType.PHYSICAL ? getDefense() : getResistance()); //[cite: 1]
-        double remainingHp = getHp(); //[cite: 1]
+        double remainingHp = getHp();
 
         if (attackType == AttackType.ARTS) {
-            remainingHp -= damage * (1 - mitigation); //[cite: 1]
+            remainingHp -= damage * (1 - mitigation);
         }
         else if (attackType == AttackType.PHYSICAL) {
-            remainingHp -= Math.max(damage - mitigation, 0); //[cite: 1]
+            remainingHp -= Math.max(damage - mitigation, 0);
         }
         
         // Prevent HP from dropping below 0
         remainingHp = Math.max(remainingHp, 0);
-        setHp(remainingHp); //[cite: 1]
+        setHp(remainingHp);
 
-        // Set isAlive to false if HP reaches 0
         if (remainingHp <= 0) {
             setIsAlive(false);
         }

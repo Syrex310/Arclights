@@ -73,25 +73,9 @@ public class StartMenu {
         ds.setColor(Color.color(0.0f, 0.0f, 0.0f, 0.6f));
         titleLabel.setEffect(ds);
 
-        Label subtitleLabel = new Label("Arclights");
-        subtitleLabel.setStyle("-fx-text-fill: #ff9b00; -fx-font-size: 11px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
 
-        Rectangle decBar = new Rectangle(200, 3, Color.web("#ff9b00"));
 
-        VBox statusBox = new VBox(5);
-        statusBox.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-padding: 10px; -fx-background-radius: 4px; -fx-border-color: rgba(255,255,255,0.1);");
-        
-        Label status1 = new Label("Terminal");
-        status1.setStyle("-fx-text-fill: #28a745; -fx-font-size: 11px; -fx-font-family: 'monospace'; -fx-font-weight: bold;");
-        Label status2 = new Label("Recruit");
-        status2.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 11px; -fx-font-family: 'monospace';");
-        Label status3 = new Label("Squad");
-        status3.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 11px; -fx-font-family: 'monospace';");
-        Label status4 = new Label("Base");
-        status4.setStyle("-fx-text-fill: #dc3545; -fx-font-size: 11px; -fx-font-family: 'monospace'; -fx-font-weight: bold;");
-
-        statusBox.getChildren().addAll(status1, status2, status3, status4);
-        infoPanel.getChildren().addAll(titleLabel, subtitleLabel, decBar, statusBox);
+        infoPanel.getChildren().addAll(titleLabel);
         root.getChildren().add(infoPanel);
 
         // Buttons
@@ -112,13 +96,17 @@ public class StartMenu {
         root.getChildren().add(btnPanel);
 
         //Test terminal ver 2
-        VBox btnTerminal = new VBox(20);
+        VBox btnTerminal = new VBox(10);
         btnTerminal.setLayoutX(660);
         btnTerminal.setLayoutY(100);
 
         Button terminalButton = createImageButton("/com/arclights/ui/Menu/btn_battle_refined2.png", 0, 600, 165);
         terminalButton.setOnAction(e -> callbacks.onTerminalClick());
-        btnTerminal.getChildren().addAll(terminalButton);
+
+        Button squadButton = createImageButton("/com/arclights/ui/Menu/btn_squad_refined.png", 0, 270, 120);
+        squadButton.setOnAction(e -> callbacks.onOperatorsClick());
+
+        btnTerminal.getChildren().addAll(terminalButton, squadButton);
         root.getChildren().add(btnTerminal);
 
         return new Scene(root, 1280, 720);
@@ -163,7 +151,6 @@ public class StartMenu {
                 btn.setGraphic(textContainer);
             }
         } else {
-            // No image requested, just set text
             btn.setGraphic(textContainer);
         }
 
