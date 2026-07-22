@@ -22,17 +22,16 @@ public class OperatorListView {
 
     public static Scene createScene(OperatorArchiveCallbacks callbacks) {
         Pane root = new Pane();
-        root.setPrefSize(800, 650);
+        root.setPrefSize(1280, 720);
 
-        // Load background image
         ImageView bgView = null;
         try {
             InputStream bgStream = OperatorListView.class.getResourceAsStream("/com/arclights/background.png");
             if (bgStream != null) {
                 Image bgImage = new Image(bgStream);
                 bgView = new ImageView(bgImage);
-                bgView.setFitWidth(800);
-                bgView.setFitHeight(650);
+                bgView.setFitWidth(1280);
+                bgView.setFitHeight(720);
                 bgView.setPreserveRatio(false);
             }
         } catch (Exception ignored) {}
@@ -40,12 +39,12 @@ public class OperatorListView {
         if (bgView != null) {
             root.getChildren().add(bgView);
         } else {
-            Rectangle fallbackBg = new Rectangle(800, 650, Color.web("#0d0f12"));
+            Rectangle fallbackBg = new Rectangle(1280, 720, Color.web("#0d0f12"));
             root.getChildren().add(fallbackBg);
         }
 
         // Tint overlay
-        Rectangle tint = new Rectangle(800, 650);
+        Rectangle tint = new Rectangle(1280, 720);
         tint.setFill(Color.rgb(10, 12, 15, 0.85));
         root.getChildren().add(tint);
 
@@ -71,12 +70,12 @@ public class OperatorListView {
         root.getChildren().add(backBtn);
 
         // Header Titles
-        Label pageTitle = new Label("OPERATOR ARCHIVES / 干员档案");
+        Label pageTitle = new Label("OPERATOR ARCHIVES");
         pageTitle.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 26px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
         pageTitle.setLayoutX(40);
         pageTitle.setLayoutY(80);
 
-        Label pageSubtitle = new Label("OPERATIONAL UNIT ARCHIVES AND SQUAD MANAGEMENT");
+        Label pageSubtitle = new Label("Test");
         pageSubtitle.setStyle("-fx-text-fill: #ff9b00; -fx-font-size: 10px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
         pageSubtitle.setLayoutX(40);
         pageSubtitle.setLayoutY(115);
@@ -98,6 +97,7 @@ public class OperatorListView {
         );
 
         // Warning Banner
+        /*
         HBox warningBanner = new HBox(15);
         warningBanner.setAlignment(Pos.CENTER_LEFT);
         warningBanner.setStyle(
@@ -120,9 +120,10 @@ public class OperatorListView {
         
         warningBanner.getChildren().addAll(warningIcon, warningText);
         archiveBox.getChildren().add(warningBanner);
+        */
 
         // Class Profiles Section
-        Label infoTitle = new Label("AVAILABLE CLASS PROFILES (CURRENT LEVEL LOG)");
+        Label infoTitle = new Label("AVAILABLE OPERATOR");
         infoTitle.setStyle("-fx-text-fill: #ff9b00; -fx-font-size: 12px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
         
         HBox classProfiles = new HBox(30);
@@ -145,7 +146,7 @@ public class OperatorListView {
         archiveBox.getChildren().addAll(infoTitle, classProfiles);
         root.getChildren().add(archiveBox);
 
-        return new Scene(root, 800, 650);
+        return new Scene(root, 1280, 720);
     }
 
     private static VBox createClassProfile(String title, String type, String desc, Color color) {

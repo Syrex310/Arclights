@@ -1,11 +1,15 @@
 package com.arclights.ui;
 
+import java.io.InputStream;
+
 import com.arclights.models.MapPresets;
 
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -21,11 +25,29 @@ public class StagePreview {
 
     public static Scene createScene(StageSelectCallbacks callbacks) {
         Pane root = new Pane();
-        root.setPrefSize(800, 650);
+        root.setPrefSize(1280, 720);
 
-        Rectangle bg = new Rectangle(800, 650, Color.web("#0d0f12"));
-        Rectangle tint = new Rectangle(800, 650, Color.rgb(10, 12, 15, 0.8));
-        root.getChildren().addAll(bg, tint);
+        ImageView bgView = null;
+        try {
+            InputStream bgStream = OperatorListView.class.getResourceAsStream("/com/arclights/background.png");
+            if (bgStream != null) {
+                Image bgImage = new Image(bgStream);
+                bgView = new ImageView(bgImage);
+                bgView.setFitWidth(1280);
+                bgView.setFitHeight(720);
+                bgView.setPreserveRatio(false);
+            }
+        } catch (Exception ignored) {}
+
+        if (bgView != null) {
+            root.getChildren().add(bgView);
+        } else {
+            Rectangle fallbackBg = new Rectangle(1280, 720, Color.web("#0d0f12"));
+            root.getChildren().add(fallbackBg);
+        }
+
+        Rectangle tint = new Rectangle(1280, 720, Color.rgb(10, 12, 15, 0.8));
+        root.getChildren().add(tint);
 
         Button backBtn = new Button("<- BACK TO MAIN MENU");
         backBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #cccccc; -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 12px; -fx-cursor: hand;");
@@ -34,12 +56,12 @@ public class StagePreview {
         backBtn.setOnAction(e -> callbacks.onBackToMenu());
         root.getChildren().add(backBtn);
 
-        Label pageTitle = new Label("TERMINAL / 终端");
+        Label pageTitle = new Label("TERMINAL");
         pageTitle.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 26px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
         pageTitle.setLayoutX(40);
         pageTitle.setLayoutY(80);
 
-        Label pageSubtitle = new Label("SELECT PREPARATION SYSTEM OPERATIONS");
+        Label pageSubtitle = new Label("SELECT OPERATIONS");
         pageSubtitle.setStyle("-fx-text-fill: #ff9b00; -fx-font-size: 10px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
         pageSubtitle.setLayoutX(40);
         pageSubtitle.setLayoutY(115);
@@ -58,7 +80,7 @@ public class StagePreview {
         cardsBox.getChildren().addAll(card1, card2);
         root.getChildren().add(cardsBox);
 
-        return new Scene(root, 800, 650);
+        return new Scene(root, 1280, 720);
     }
 
     private static Pane createStageCard(String code, String name, String desc, char[][] layout, String accentColor, StageSelectCallbacks callbacks) {
@@ -77,7 +99,7 @@ public class StagePreview {
         descLbl.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 11px; -fx-wrap-text: true;");
         descLbl.setPrefHeight(60);
 
-        Button deployBtn = new Button("DEPLOY / 出击");
+        Button deployBtn = new Button("DEPLOY");
         deployBtn.setPrefSize(260, 45);
         deployBtn.setStyle("-fx-background-color: " + accentColor + "; -fx-text-fill: #000000; -fx-font-weight: bold; -fx-cursor: hand;");
         deployBtn.setOnAction(e -> callbacks.onDeployStage(layout, name));

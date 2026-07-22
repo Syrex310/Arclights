@@ -202,7 +202,7 @@ public class App extends Application {
         };
         gameLoop.start();
 
-        Scene scene = new Scene(root, 800, 650);
+        Scene scene = new Scene(root, 1280, 720);
         stage.setScene(scene);
     }
 
