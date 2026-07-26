@@ -11,14 +11,17 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 public class UILoader {
+    public static final double WINDOW_WIDTH = 1280;
+    public static final double WINDOW_HEIGHT = 645;
+
     public static void loadBackground(Pane root, String resourcePath, Color fallbackColor) {
         ImageView bgView = null;
         try (InputStream bgStream = UILoader.class.getResourceAsStream(resourcePath)) {
             if (bgStream != null) {
                 Image bgImage = new Image(bgStream);
                 bgView = new ImageView(bgImage);
-                bgView.setFitWidth(1280);
-                bgView.setFitHeight(720);
+                bgView.setFitWidth(WINDOW_WIDTH);
+                bgView.setFitHeight(WINDOW_HEIGHT);
                 bgView.setPreserveRatio(false);
             }
         } catch (Exception ignored) {}
@@ -26,13 +29,42 @@ public class UILoader {
         if (bgView != null) {
             root.getChildren().add(bgView);
         } else {
-            Rectangle fallbackBg = new Rectangle(1280, 720, fallbackColor);
+            Rectangle fallbackBg = new Rectangle(WINDOW_WIDTH, WINDOW_HEIGHT, fallbackColor);
             root.getChildren().add(fallbackBg);
         }
     }
 
+    public static Image loadImage(String resourcePath) {
+        try (InputStream stream = UILoader.class.getResourceAsStream(resourcePath)) {
+            if (stream != null) {
+                return new Image(stream);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load image at: " + resourcePath);
+        }
+        return null;
+    }
+
+    public static ImageView createImageView(String resourcePath, double translateX, double translateY, double width, double height) {
+        Image img = loadImage(resourcePath);
+        if (img != null) {
+            ImageView imgView = new ImageView(img);
+            imgView.setFitWidth(width);
+            imgView.setFitHeight(height);
+            imgView.setTranslateX(translateX);
+            imgView.setTranslateY(translateY);
+            return imgView;
+        }
+        return null;
+    }
+
+    public static ImageView createImageView(String resourcePath) {
+        Image img = loadImage(resourcePath);
+        return (img != null) ? new ImageView(img) : null;
+    }
+
     public static void addTintOverlay(Pane root, double opacity) {
-        Rectangle tint = new Rectangle(1280, 720);
+        Rectangle tint = new Rectangle(WINDOW_WIDTH, WINDOW_HEIGHT);
         tint.setFill(Color.rgb(10, 12, 15, opacity));
         root.getChildren().add(tint);
     }
@@ -55,10 +87,11 @@ public class UILoader {
         return backBtn;
     }
 
-    public static Button createImageButton(String imagePath, double translateX, double width, double height) {
+    public static Button createImageButton(String imagePath, double translateX, double translateY, double width, double height) {
         Button btn = new Button();
         btn.setPrefSize(width, height);
         btn.setTranslateX(translateX);
+        btn.setTranslateY(translateY);
 
         try (InputStream imgStream = UILoader.class.getResourceAsStream(imagePath)) {
             if (imgStream != null) {
@@ -74,12 +107,14 @@ public class UILoader {
         btn.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
 
         btn.setOnMouseEntered(e -> {
-            btn.setOpacity(0.8);
-            btn.setTranslateX(translateX - 5);
+            btn.setOpacity(0.85);
+            btn.setScaleX(1.01);
+            btn.setScaleY(1.01);
         });
         btn.setOnMouseExited(e -> {
             btn.setOpacity(1.0);
-            btn.setTranslateX(translateX);
+            btn.setScaleX(1);
+            btn.setScaleY(1);
         });
 
         return btn;

@@ -18,7 +18,7 @@ public class OperatorListView {
 
     public static Scene createScene(OperatorArchiveCallbacks callbacks) {
         Pane root = new Pane();
-        root.setPrefSize(1280, 720);
+        root.setPrefSize(UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
 
         // Standardized Utilities
         UILoader.loadBackground(root, "/com/arclights/background.png", Color.web("#0d0f12"));
@@ -53,7 +53,7 @@ public class OperatorListView {
         archiveBox.getChildren().addAll(infoTitle, classProfiles);
         root.getChildren().add(archiveBox);
 
-        return new Scene(root, 1280, 720);
+        return new Scene(root, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
     }
 
     private static VBox createClassProfile(String title, String type, String desc, Color color) {

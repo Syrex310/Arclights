@@ -20,7 +20,7 @@ public class StagePreview {
 
     public static Scene createScene(StageSelectCallbacks callbacks) {
         Pane root = new Pane();
-        root.setPrefSize(1280, 720);
+        root.setPrefSize(UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
 
         // Standardized Utilities
         UILoader.loadBackground(root, "/com/arclights/background.png", Color.web("#0d0f12"));
@@ -42,7 +42,7 @@ public class StagePreview {
         cardsBox.getChildren().addAll(card1, card2);
         root.getChildren().add(cardsBox);
 
-        return new Scene(root, 1280, 720);
+        return new Scene(root, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
     }
 
     private static Pane createStageCard(String code, String name, String desc, char[][] layout, String accentColor, StageSelectCallbacks callbacks) {
