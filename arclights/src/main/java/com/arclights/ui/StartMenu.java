@@ -23,7 +23,18 @@ public class StartMenu {
         UILoader.loadBackground(root, "/com/arclights/background2.png", Color.web("#0d0f12"));
         UILoader.addTintOverlay(root, 0.40);
 
-        VBox btnTerminal = new VBox(0);
+        //Left
+        VBox newsTerminal = new VBox();
+        newsTerminal.setLayoutX(20);
+        newsTerminal.setLayoutY(500);
+
+        Button newsButton = UILoader.createImageButton("/com/arclights/ui/building.png", 0, 0, 270, 105);
+        newsButton.setOnAction(e -> callbacks.onExitClick());
+
+        newsTerminal.getChildren().addAll(newsButton);
+
+        //Right
+        VBox btnTerminal = new VBox();
         btnTerminal.setLayoutX(670);
         btnTerminal.setLayoutY(80);
         
@@ -61,20 +72,20 @@ public class StartMenu {
         inventoryButton.setOnAction(e -> callbacks.onExitClick());
 
         //Row arrangment
-        HBox rowTwo = new HBox(0); 
+        HBox rowTwo = new HBox(); 
         rowTwo.getChildren().addAll(squadButton, charButton);
 
-        HBox rowThree = new HBox(0);
+        HBox rowThree = new HBox();
         rowThree.getChildren().addAll(shopButton, recruitButton, headhuntButton, recruitGroupButton);
 
-        HBox rowFour = new HBox(0);
+        HBox rowFour = new HBox();
         rowFour.getChildren().addAll(missionButton, buildingButton, inventoryButton);
 
         Button exitButton = UILoader.createImageButton("/com/arclights/ui/Menu/btn_squad.png", 0, 0, 270, 120); // Temporary
         exitButton.setOnAction(e -> callbacks.onExitClick());
 
         btnTerminal.getChildren().addAll(terminalButton, rowTwo, rowThree, rowFour);
-        root.getChildren().add(btnTerminal);
+        root.getChildren().addAll(newsTerminal, btnTerminal);
 
         return new Scene(root, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
     }
