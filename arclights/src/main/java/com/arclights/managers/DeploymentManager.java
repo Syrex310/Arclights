@@ -81,7 +81,7 @@ public class DeploymentManager {
                 }
 
                 if (tempOp != null) {
-                    showRangePreview(tempOp);
+                    //showRangePreview(tempOp);
                 }
             }
         }
@@ -129,7 +129,7 @@ public class DeploymentManager {
                     finalDirectionArrow.setTranslateY(pendingOperator.getY());
                     root.getChildren().add(finalDirectionArrow);
 
-                    showRangePreview(pendingOperator);
+                    //showRangePreview(pendingOperator);
                     return;
                 }
             }
@@ -172,7 +172,7 @@ public class DeploymentManager {
             case WEST:  finalDirectionArrow.setRotate(270); break;
         }
 
-        showRangePreview(pendingOperator);
+        //showRangePreview(pendingOperator);
     }
 
     public void confirmDeployment() {
@@ -217,7 +217,7 @@ public class DeploymentManager {
         if (currentState == SelectionState.DRAGGING_SNIPER || 
             currentState == SelectionState.DRAGGING_DEFENDER || 
             currentState == SelectionState.SELECTING_DIRECTION) {
-            return 0.1; 
+            return 1.0; //Specify later
         }
         return 1.0; // Normal speed
     }

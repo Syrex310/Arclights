@@ -1,20 +1,15 @@
 package com.arclights.ui;
 
-import java.io.InputStream;
-
 import com.arclights.models.MapPresets;
 
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 public class StagePreview {
 
@@ -27,46 +22,13 @@ public class StagePreview {
         Pane root = new Pane();
         root.setPrefSize(1280, 720);
 
-        ImageView bgView = null;
-        try {
-            InputStream bgStream = OperatorListView.class.getResourceAsStream("/com/arclights/background.png");
-            if (bgStream != null) {
-                Image bgImage = new Image(bgStream);
-                bgView = new ImageView(bgImage);
-                bgView.setFitWidth(1280);
-                bgView.setFitHeight(720);
-                bgView.setPreserveRatio(false);
-            }
-        } catch (Exception ignored) {}
-
-        if (bgView != null) {
-            root.getChildren().add(bgView);
-        } else {
-            Rectangle fallbackBg = new Rectangle(1280, 720, Color.web("#0d0f12"));
-            root.getChildren().add(fallbackBg);
-        }
-
-        Rectangle tint = new Rectangle(1280, 720, Color.rgb(10, 12, 15, 0.8));
-        root.getChildren().add(tint);
-
-        Button backBtn = new Button("<- BACK TO MAIN MENU");
-        backBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #cccccc; -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 12px; -fx-cursor: hand;");
-        backBtn.setLayoutX(40);
-        backBtn.setLayoutY(40);
-        backBtn.setOnAction(e -> callbacks.onBackToMenu());
+        // Standardized Utilities
+        UILoader.loadBackground(root, "/com/arclights/background.png", Color.web("#0d0f12"));
+        UILoader.addTintOverlay(root, 0.80);
+        UILoader.addPageHeader(root, "TERMINAL", "SELECT OPERATIONS");
+        
+        Button backBtn = UILoader.createBackButton(callbacks::onBackToMenu);
         root.getChildren().add(backBtn);
-
-        Label pageTitle = new Label("TERMINAL");
-        pageTitle.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 26px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
-        pageTitle.setLayoutX(40);
-        pageTitle.setLayoutY(80);
-
-        Label pageSubtitle = new Label("SELECT OPERATIONS");
-        pageSubtitle.setStyle("-fx-text-fill: #ff9b00; -fx-font-size: 10px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
-        pageSubtitle.setLayoutX(40);
-        pageSubtitle.setLayoutY(115);
-
-        root.getChildren().addAll(pageTitle, pageSubtitle);
 
         HBox cardsBox = new HBox(40);
         cardsBox.setLayoutX(60);

@@ -107,7 +107,7 @@ public class App extends Application {
         }
 
         Label statusLabel = new Label(
-                "Level: " + levelName + " | Drag card to map & release. Then drag & release on unit to set range & deploy!");
+                "Level: " + levelName + " | Drag & release to deploy");
         statusLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
 
         Rectangle sniperCard = new Rectangle(130, 50, Color.GREEN);
@@ -123,6 +123,7 @@ public class App extends Application {
         Pane defenderGroup = new Pane(defenderCard, defenderLabel);
         defenderLabel.setLayoutY(15);
         defenderLabel.setLayoutX(25);
+        
 
         HBox cardDeckDeck = new HBox(20, sniperGroup, defenderGroup);
 
@@ -130,7 +131,7 @@ public class App extends Application {
         controlDashboard.setStyle("-fx-background-color: #222222; -fx-padding: 15px; -fx-background-radius: 5px;");
         controlDashboard.setLayoutX(50);
         controlDashboard.setLayoutY(460);
-        root.getChildren().add(controlDashboard);
+        //root.getChildren().add(controlDashboard);
 
         Button exitBtn = new Button("QUIT OPERATION");
         exitBtn.setStyle(
@@ -168,7 +169,7 @@ public class App extends Application {
             }
             showStageSelect(stage);
         });
-        root.getChildren().add(exitBtn);
+        root.getChildren().addAll(controlDashboard,exitBtn);
 
         InputController inputController = new InputController(deploymentManager, gameMap);
         inputController.attachInputHandlers(root, sniperGroup, defenderGroup);

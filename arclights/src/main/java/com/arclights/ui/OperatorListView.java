@@ -1,13 +1,9 @@
 package com.arclights.ui;
 
-import java.io.InputStream;
-
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -24,63 +20,13 @@ public class OperatorListView {
         Pane root = new Pane();
         root.setPrefSize(1280, 720);
 
-        ImageView bgView = null;
-        try {
-            InputStream bgStream = OperatorListView.class.getResourceAsStream("/com/arclights/background.png");
-            if (bgStream != null) {
-                Image bgImage = new Image(bgStream);
-                bgView = new ImageView(bgImage);
-                bgView.setFitWidth(1280);
-                bgView.setFitHeight(720);
-                bgView.setPreserveRatio(false);
-            }
-        } catch (Exception ignored) {}
-
-        if (bgView != null) {
-            root.getChildren().add(bgView);
-        } else {
-            Rectangle fallbackBg = new Rectangle(1280, 720, Color.web("#0d0f12"));
-            root.getChildren().add(fallbackBg);
-        }
-
-        // Tint overlay
-        Rectangle tint = new Rectangle(1280, 720);
-        tint.setFill(Color.rgb(10, 12, 15, 0.85));
-        root.getChildren().add(tint);
-
-        // Back Button
-        Button backBtn = new Button("<- BACK TO MAIN MENU");
-        backBtn.setStyle(
-            "-fx-background-color: transparent; " +
-            "-fx-text-fill: #cccccc; " +
-            "-fx-font-family: 'Arial'; " +
-            "-fx-font-weight: bold; " +
-            "-fx-font-size: 12px; " +
-            "-fx-cursor: hand;"
-        );
-        backBtn.setLayoutX(40);
-        backBtn.setLayoutY(40);
-        backBtn.setOnMouseEntered(e -> backBtn.setStyle(
-            "-fx-background-color: transparent; -fx-text-fill: #ff9b00; -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 12px; -fx-cursor: hand;"
-        ));
-        backBtn.setOnMouseExited(e -> backBtn.setStyle(
-            "-fx-background-color: transparent; -fx-text-fill: #cccccc; -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 12px; -fx-cursor: hand;"
-        ));
-        backBtn.setOnAction(e -> callbacks.onBackToMenu());
+        // Standardized Utilities
+        UILoader.loadBackground(root, "/com/arclights/background.png", Color.web("#0d0f12"));
+        UILoader.addTintOverlay(root, 0.85);
+        UILoader.addPageHeader(root, "OPERATOR ARCHIVES", "Test");
+        
+        Button backBtn = UILoader.createBackButton(callbacks::onBackToMenu);
         root.getChildren().add(backBtn);
-
-        // Header Titles
-        Label pageTitle = new Label("OPERATOR ARCHIVES");
-        pageTitle.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 26px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
-        pageTitle.setLayoutX(40);
-        pageTitle.setLayoutY(80);
-
-        Label pageSubtitle = new Label("Test");
-        pageSubtitle.setStyle("-fx-text-fill: #ff9b00; -fx-font-size: 10px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
-        pageSubtitle.setLayoutX(40);
-        pageSubtitle.setLayoutY(115);
-
-        root.getChildren().addAll(pageTitle, pageSubtitle);
 
         // Content Box
         VBox archiveBox = new VBox(20);
@@ -90,57 +36,18 @@ public class OperatorListView {
         archiveBox.setStyle(
             "-fx-background-color: rgba(10, 12, 15, 0.95); " +
             "-fx-border-color: rgba(255, 255, 255, 0.05); " +
-            "-fx-border-width: 1px; " +
-            "-fx-border-radius: 6px; " +
-            "-fx-background-radius: 6px; " +
-            "-fx-padding: 30px;"
+            "-fx-border-width: 1px; -fx-border-radius: 6px; " +
+            "-fx-background-radius: 6px; -fx-padding: 30px;"
         );
 
-        // Warning Banner
-        /*
-        HBox warningBanner = new HBox(15);
-        warningBanner.setAlignment(Pos.CENTER_LEFT);
-        warningBanner.setStyle(
-            "-fx-background-color: rgba(220, 53, 69, 0.1); " +
-            "-fx-border-color: #dc3545; " +
-            "-fx-border-width: 1px; " +
-            "-fx-padding: 15px; " +
-            "-fx-background-radius: 4px;"
-        );
-
-        Label warningIcon = new Label("[!]");
-        warningIcon.setStyle("-fx-text-fill: #dc3545; -fx-font-size: 18px; -fx-font-weight: bold; -fx-font-family: 'monospace';");
-        
-        VBox warningText = new VBox(3);
-        Label warningTitle = new Label("ACCESS RESTRICTED / CORE OFFLINE");
-        warningTitle.setStyle("-fx-text-fill: #dc3545; -fx-font-size: 13px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
-        Label warningDesc = new Label("The operator deployment configuration files are locked. Complete current main training phases to unlock system access.");
-        warningDesc.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 10px; -fx-font-family: 'Arial';");
-        warningText.getChildren().addAll(warningTitle, warningDesc);
-        
-        warningBanner.getChildren().addAll(warningIcon, warningText);
-        archiveBox.getChildren().add(warningBanner);
-        */
-
-        // Class Profiles Section
         Label infoTitle = new Label("AVAILABLE OPERATOR");
         infoTitle.setStyle("-fx-text-fill: #ff9b00; -fx-font-size: 12px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
         
         HBox classProfiles = new HBox(30);
         classProfiles.setAlignment(Pos.CENTER);
         
-        VBox sniperProfile = createClassProfile(
-            "SNIPER", 
-            "RANGED / PHYSICAL", 
-            "High speed single-target physical sniper. Deployed on high ground tiles to target incoming enemy drones and lightweight leaders.", 
-            Color.GREEN
-        );
-        VBox defenderProfile = createClassProfile(
-            "DEFENDER", 
-            "MELEE / DEFENSE", 
-            "Heavy blocker unit. Deployed on melee road tiles to intercept and stall up to 3 enemy units simultaneously.", 
-            Color.BLUE
-        );
+        VBox sniperProfile = createClassProfile("SNIPER", "RANGED / PHYSICAL", "High speed single-target physical sniper.", Color.GREEN);
+        VBox defenderProfile = createClassProfile("DEFENDER", "MELEE / DEFENSE", "Heavy blocker unit.", Color.BLUE);
         
         classProfiles.getChildren().addAll(sniperProfile, defenderProfile);
         archiveBox.getChildren().addAll(infoTitle, classProfiles);
@@ -153,22 +60,16 @@ public class OperatorListView {
         VBox profile = new VBox(10);
         profile.setPrefWidth(290);
         profile.setStyle(
-            "-fx-background-color: rgba(255, 255, 255, 0.02); " +
-            "-fx-border-color: rgba(255, 255, 255, 0.1); " +
-            "-fx-border-width: 1px; " +
-            "-fx-background-radius: 4px; " +
-            "-fx-border-radius: 4px; " +
-            "-fx-padding: 15px;"
+            "-fx-background-color: rgba(255, 255, 255, 0.02); -fx-border-color: rgba(255, 255, 255, 0.1); " +
+            "-fx-border-width: 1px; -fx-background-radius: 4px; -fx-border-radius: 4px; -fx-padding: 15px;"
         );
 
         HBox pHeader = new HBox(10);
         pHeader.setAlignment(Pos.CENTER_LEFT);
         
         Rectangle icon = new Rectangle(12, 12, color);
-        
         Label pTitle = new Label(title);
         pTitle.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 14px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");
-        
         Label pType = new Label("(" + type + ")");
         pType.setStyle("-fx-text-fill: #ff9b00; -fx-font-size: 9px; -fx-font-family: 'monospace';");
 
