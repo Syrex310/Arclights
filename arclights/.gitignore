@@ -1,0 +1,9 @@
+# Ignore class files
+target/
+bin/
+*.class
+
+# Ignore IDE
+.vscode/
+.idea/
+*.iml

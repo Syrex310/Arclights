@@ -48,7 +48,7 @@ public abstract class GameEntity {
     public void takeDamage(double damage, AttackType attackType) {
         if (!isAlive()) return;
 
-        double mitigation = (attackType == AttackType.PHYSICAL ? getDefense() : getResistance()); //[cite: 1]
+        double mitigation = (attackType == AttackType.PHYSICAL ? getDefense() : getResistance()); 
         double remainingHp = getHp();
 
         if (attackType == AttackType.ARTS) {
