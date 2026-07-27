@@ -22,16 +22,19 @@ public class StartMenu {
 
         UILoader.loadBackground(root, "/com/arclights/background2.png", Color.web("#0d0f12"));
         UILoader.addTintOverlay(root, 0.40);
+        
+        //Character
+        ImageView sakikoChar = UILoader.createImageView("/com/arclights/Togawa_Sakiko_Elite_2.png", -220, -340, 1440, 1280);
+        root.getChildren().add(sakikoChar);
 
         //Left
         VBox newsTerminal = new VBox();
         newsTerminal.setLayoutX(20);
         newsTerminal.setLayoutY(500);
 
-        Button newsButton = UILoader.createImageButton("/com/arclights/ui/building.png", 0, 0, 270, 105);
-        newsButton.setOnAction(e -> callbacks.onExitClick());
+        ImageView newsImage = UILoader.createImageView("/com/arclights/ui/50_i10.png", 0, 0, 208, 120);
 
-        newsTerminal.getChildren().addAll(newsButton);
+        newsTerminal.getChildren().addAll(newsImage);
 
         //Right
         VBox btnTerminal = new VBox();

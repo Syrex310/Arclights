@@ -18,20 +18,28 @@ public class Operator extends GameEntity {
     private Direction facing;
     private int attackCooldownTimer;
     private final List<Enemy> blockedEnemies = new ArrayList<>();
-    protected List<Point2D> relativeRangeOffsets = new ArrayList<>(); // Collection of relative (col, row) offsets
+    protected List<Point2D> relativeRangeOffsets = new ArrayList<>(); // Relative (col, row) offsets
 
+    // Constructor now receives true pixel positions directly from DeploymentManager
+    public Operator(int gridX, int gridY, double pixelX, double pixelY, double hp, double atk, 
+                    int blockCount, AttackType attackType, double attackInterval, 
+                    double resistance, double defense, boolean isGround) {
+        super(
+            pixelX, 
+            pixelY, 
+            hp, atk, blockCount, attackType, attackInterval, resistance, defense, true, isGround
+        );
+        this.gridX = gridX;
+        this.gridY = gridY;
+        this.attackCooldownTimer = 0;
+        this.facing = Direction.EAST; // Default facing configuration
+    }
+
+    // Overloaded constructor for fallback / default pixel calculation if needed
     public Operator(double gridX, double gridY, double hp, double atk, int blockCount, 
                     AttackType attackType, double attackInterval, double resistance, 
                     double defense, boolean isGround) {
-        super(
-            gridX * (62) + 50 + 30, 
-            gridY * (62) + 50 + 30, 
-            hp, atk, blockCount, attackType, attackInterval, resistance, defense, true, isGround
-        );
-        this.gridX = (int) gridX;
-        this.gridY = (int) gridY;
-        this.attackCooldownTimer = 0;
-        this.facing = Direction.EAST; // Default facing configuration
+        this((int) gridX, (int) gridY, gridX * 64 + 32, gridY * 64 + 32, hp, atk, blockCount, attackType, attackInterval, resistance, defense, isGround);
     }
 
     public void setFacing(Direction facing) {
@@ -45,7 +53,6 @@ public class Operator extends GameEntity {
     public int getGridX() { return gridX; }
     public int getGridY() { return gridY; }
 
-
     public List<Point2D> getAbsoluteRangeTiles() {
         List<Point2D> absoluteTiles = new ArrayList<>();
         for (Point2D offset : relativeRangeOffsets) {
@@ -54,14 +61,14 @@ public class Operator extends GameEntity {
             double rotatedX = dx;
             double rotatedY = dy;
 
-            // Rotate coordinates based on facing direction
+            // Correct 2D rotation matrix relative to EAST (0 degrees)
             switch (facing) {
                 case NORTH:
-                    rotatedX = -dy;
+                    rotatedX = dy;
                     rotatedY = -dx;
                     break;
                 case SOUTH:
-                    rotatedX = dy;
+                    rotatedX = -dy;
                     rotatedY = dx;
                     break;
                 case WEST:
@@ -70,7 +77,8 @@ public class Operator extends GameEntity {
                     break;
                 case EAST:
                 default:
-                    // Default layout blueprint is designed facing EAST
+                    rotatedX = dx;
+                    rotatedY = dy;
                     break;
             }
 
@@ -98,24 +106,24 @@ public class Operator extends GameEntity {
 
         blockedEnemies.removeIf(enemy -> !enemy.isAlive());
 
-        // Melee units handle proximity blocking logic
+        // Melee unit blocking logic based on entity center distance
         if (isGround()) {
             for (Enemy enemy : activeEnemies) {
                 if (!enemy.isAlive() || enemy.isBlocked()) continue;
 
-                double dx = enemy.getX() - this.getX();
-                double dy = enemy.getY() - this.getY();
-                double distance = Math.sqrt(dx * dx + dy * dy);
+                // Check if enemy is on the same tile as the Defender
+                boolean isSameTile = (enemy.getCurrentGridX() == this.gridX) 
+                                && (enemy.getCurrentGridY() == this.gridY);
 
-                if (distance <= 30.0) {
+                if (isSameTile) {
                     if (getRemainingBlockCount() >= enemy.getBlockCount()) {
                         blockedEnemies.add(enemy);
                         enemy.setBlocked(true);
-                        System.out.println("Enemy blocked! Remaining Block: " + getRemainingBlockCount());
+                        System.out.println("Enemy blocked at grid (" + gridX + ", " + gridY + ")! Remaining Block: " + getRemainingBlockCount());
                     }
                 }
             }
-        }   
+        }  
 
         if (attackCooldownTimer > 0) {
             attackCooldownTimer--;
@@ -135,19 +143,14 @@ public class Operator extends GameEntity {
         }
     }
 
-
     private Enemy findTargetInGridRange(List<Enemy> activeEnemies) {
         List<Point2D> targetTiles = getAbsoluteRangeTiles();
 
         for (Enemy enemy : activeEnemies) {
             if (!enemy.isAlive()) continue;
 
-            // Reverse map the pixel position back to raw grid indexes
-            int enemyGridX = (int) ((enemy.getX() - 50) / 62);
-            int enemyGridY = (int) ((enemy.getY() - 50) / 62);
-
             for (Point2D tile : targetTiles) {
-                if ((int) tile.getX() == enemyGridX && (int) tile.getY() == enemyGridY) {
+                if ((int) tile.getX() == enemy.getCurrentGridX() && (int) tile.getY() == enemy.getCurrentGridY()) {
                     return enemy;
                 }
             }

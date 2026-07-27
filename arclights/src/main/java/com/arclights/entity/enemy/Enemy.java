@@ -12,6 +12,10 @@ public class Enemy extends GameEntity {
     private int currentWaypointIndex;
     private boolean isBlocked = false;
 
+    // Track current grid column & row for clean operator targeting
+    private int currentGridX;
+    private int currentGridY;
+
     public Enemy(double startX, double startY, double hp, double atk, double speed, List<Point2D> waypoints) {
         super(
             startX,
@@ -45,25 +49,39 @@ public class Enemy extends GameEntity {
         if (!isAlive() || waypoints == null || currentWaypointIndex >= waypoints.size()) return;
 
         if (isBlocked()) return;
+
         // Get our current target checkpoint
         Point2D target = waypoints.get(currentWaypointIndex);
 
-        // Calculate distance to target
+        // Calculate distance to target waypoint
         double dx = target.getX() - getX();
         double dy = target.getY() - getY();
         double distance = Math.sqrt(dx * dx + dy * dy);
 
-        // If we are close enough to the checkpoint, switch to the next one
-        if (distance <= speed) {
+        // Snap to waypoint when close enough
+        if (distance <= Math.max(speed, 2.0)) {
             setX(target.getX());
             setY(target.getY());
             currentWaypointIndex++;
         } else {
-            // Move smoothly toward the target waypoint using a normalized velocity vector
+            // Move smoothly toward the target waypoint using normalized velocity
             setX(getX() + (dx / distance) * speed);
             setY(getY() + (dy / distance) * speed);
         }
+
     }
+
+    /**
+     * Helper to update current grid location from layout parameters (called by EnemyManager)
+     */
+    public void updateGridPosition(double offsetX, double offsetY, double tileWidth, double tileHeight, double paddingX, double paddingY) {
+        this.currentGridX = (int) Math.floor((getX() - offsetX) / (tileWidth + paddingX));
+        this.currentGridY = (int) Math.floor((getY() - offsetY) / (tileHeight + paddingY));
+    }
+
+    // Grid Location Getters for Operator Range Checks
+    public int getCurrentGridX() { return currentGridX; }
+    public int getCurrentGridY() { return currentGridY; }
 
     // Getters and Setters for Enemy
     public boolean isBlocked() { return isBlocked; }

@@ -4,8 +4,13 @@ public class GameMap {
     private final Tile[][] grid;
     private final int rows;
     private final int cols;
+    private MapConfig mapConfig;
 
     public GameMap(char[][] layout) {
+        this(layout, MapConfig.defaultConfig("/com/arclights/map1-1(8).png"));
+    }
+    
+    public GameMap(char[][] layout, MapConfig mapConfig) {
         if (layout == null || layout.length == 0) {
             throw new IllegalArgumentException("Map layout cannot be empty.");
         }
@@ -18,6 +23,11 @@ public class GameMap {
                 grid[r][c] = createTileFromChar(layout[r][c]);
             }
         }
+        this.mapConfig = mapConfig;
+    }
+
+    public MapConfig getMapConfig() {
+        return mapConfig != null ? mapConfig : MapConfig.defaultConfig("/com/arclights/map1-1(8).png");
     }
 
     private Tile createTileFromChar(char type) {
@@ -30,8 +40,10 @@ public class GameMap {
                 return new Tile(Tile.TileType.ENEMY_SPAWN, Tile.DeploymentType.NONE);
             case 'O':
                 return new Tile(Tile.TileType.PLAYER_OBJECTIVE, Tile.DeploymentType.NONE);
+            case 'D':
+                return new Tile(Tile.TileType.DECORATION, Tile.DeploymentType.NONE);
             default:
-                return new Tile(Tile.TileType.MELEE_GROUND, Tile.DeploymentType.NONE); // 'G'
+                return new Tile(Tile.TileType.DECORATION, Tile.DeploymentType.NONE);
         }
     }
 

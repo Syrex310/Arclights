@@ -5,10 +5,14 @@ import com.arclights.handlers.InputController;
 import com.arclights.managers.DeploymentManager;
 import com.arclights.managers.EnemyManager;
 import com.arclights.models.GameMap;
-import com.arclights.models.Tile;
+import com.arclights.models.MapConfig;
+import com.arclights.models.MapPresets;
+import com.arclights.ui.MapRenderer;
+import com.arclights.ui.OperatorDeploymentBar;
 import com.arclights.ui.OperatorListView;
 import com.arclights.ui.StagePreview;
 import com.arclights.ui.StartMenu;
+import com.arclights.ui.UILoader;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -75,36 +79,15 @@ public class App extends Application {
         Pane root = new Pane();
         root.setStyle("-fx-background-color: #121212;");
 
-        GameMap gameMap = new GameMap(levelLayout);
+        MapConfig mapConfig = MapPresets.getConfigForLayout(levelLayout);
+        GameMap gameMap = new GameMap(levelLayout, mapConfig);
 
-        EnemyManager enemyManager = new EnemyManager(root, gameMap);
+        MapRenderer.RenderResult layout = MapRenderer.renderMap(root, gameMap, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT); // 1280 x 645
+
         DeploymentManager deploymentManager = new DeploymentManager(root);
+        deploymentManager.updateMapLayout(layout);
 
-        int tileSize = 60;
-        int padding = 2;
-
-        for (int row = 0; row < gameMap.getRows(); row++) {
-            for (int col = 0; col < gameMap.getCols(); col++) {
-                Rectangle tileNode = new Rectangle(tileSize, tileSize);
-                Tile logicTile = gameMap.getTile(row, col);
-
-                if (logicTile.getTileType() == Tile.TileType.RANGED_HIGH_GROUND) {
-                    tileNode.setFill(Color.DARKGRAY);
-                } else if (logicTile.getTileType() == Tile.TileType.ENEMY_SPAWN) {
-                    tileNode.setFill(Color.RED);
-                } else if (logicTile.getTileType() == Tile.TileType.PLAYER_OBJECTIVE) {
-                    tileNode.setFill(Color.BLUE);
-                } else if (logicTile.getDeploymentType() == Tile.DeploymentType.MELEE_ONLY) {
-                    tileNode.setFill(Color.LIGHTGRAY);
-                } else {
-                    tileNode.setFill(Color.LIGHTPINK);
-                }
-
-                tileNode.setX(col * (tileSize + padding) + 50);
-                tileNode.setY(row * (tileSize + padding) + 50);
-                root.getChildren().add(tileNode);
-            }
-        }
+        EnemyManager enemyManager = new EnemyManager(root, gameMap, layout);
 
         Label statusLabel = new Label(
                 "Level: " + levelName + " | Drag & release to deploy");
@@ -123,7 +106,6 @@ public class App extends Application {
         Pane defenderGroup = new Pane(defenderCard, defenderLabel);
         defenderLabel.setLayoutY(15);
         defenderLabel.setLayoutX(25);
-        
 
         HBox cardDeckDeck = new HBox(20, sniperGroup, defenderGroup);
 
@@ -132,6 +114,8 @@ public class App extends Application {
         controlDashboard.setLayoutX(50);
         controlDashboard.setLayoutY(460);
         //root.getChildren().add(controlDashboard);
+
+        OperatorDeploymentBar deploymentBar = new OperatorDeploymentBar(levelName);
 
         Button exitBtn = new Button("QUIT OPERATION");
         exitBtn.setStyle(
@@ -169,10 +153,15 @@ public class App extends Application {
             }
             showStageSelect(stage);
         });
-        root.getChildren().addAll(controlDashboard,exitBtn);
+
+        root.getChildren().addAll(deploymentBar.getRoot(), exitBtn);
 
         InputController inputController = new InputController(deploymentManager, gameMap);
-        inputController.attachInputHandlers(root, sniperGroup, defenderGroup);
+        inputController.attachInputHandlers(
+            root, 
+            deploymentBar.getSniperGroup(), 
+            deploymentBar.getDefenderGroup()
+        );
 
         enemyManager.spawnEnemy(EnemyType.BOSS);
 
@@ -203,7 +192,7 @@ public class App extends Application {
         };
         gameLoop.start();
 
-        Scene scene = new Scene(root, 1280, 720);
+        Scene scene = new Scene(root, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
         stage.setScene(scene);
     }
 
