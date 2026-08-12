@@ -8,19 +8,19 @@ import javafx.scene.image.Image;
 
 public final class SpriteAnimation {
     private final List<Image> frames = new ArrayList<>();
-    private final int ticksPerFrame;
+    private final double ticksPerFrame;
     private final boolean loop;
     private int frameIndex;
-    private int tickCounter;
+    private double tickCounter;
     private boolean finished;
 
-    private SpriteAnimation(List<Image> frames, int ticksPerFrame, boolean loop) {
+    private SpriteAnimation(List<Image> frames, double ticksPerFrame, boolean loop) {
         this.frames.addAll(frames);
         this.ticksPerFrame = Math.max(1, ticksPerFrame);
         this.loop = loop;
     }
 
-    public static SpriteAnimation load(String resourceDirectory, int ticksPerFrame, boolean loop) {
+    public static SpriteAnimation load(String resourceDirectory, double ticksPerFrame, boolean loop) {
         List<Image> frames = new ArrayList<>();
         String dir = resourceDirectory.endsWith("/") ? resourceDirectory : resourceDirectory + "/";
 

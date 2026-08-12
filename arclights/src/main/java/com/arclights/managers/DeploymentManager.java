@@ -296,11 +296,10 @@ public class DeploymentManager {
     }
 
     public double getGameSpeedMultiplier() {
-        // Drop speed to 0.1x during drag/swipe
         if (currentState == SelectionState.DRAGGING_SNIPER || 
             currentState == SelectionState.DRAGGING_DEFENDER || 
             currentState == SelectionState.SELECTING_DIRECTION) {
-            return 0.1;
+            return 0;
         }
         return 1.0;
     }

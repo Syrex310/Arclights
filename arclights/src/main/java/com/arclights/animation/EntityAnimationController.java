@@ -26,15 +26,15 @@ public final class EntityAnimationController {
 
     private void loadAnimations() {
         String group = enemy ? "enemies" : "operators";
-        // Change these defaults here if your art has a different timing.
-        load(AnimationState.IDLE, group, 8, true);
-        load(AnimationState.WALK, group, 4, true);
-        load(AnimationState.ATTACK, group, 3, false);
-        load(AnimationState.DEATH, group, 5, false);
+
+        load(AnimationState.IDLE, group, 1, true);
+        load(AnimationState.WALK, group, 1, true);
+        load(AnimationState.ATTACK, group, 1, false);
+        load(AnimationState.DEATH, group, 1, false);
         sprite.play(AnimationState.IDLE);
     }
 
-    private void load(AnimationState state, String group, int ticksPerFrame, boolean loop) {
+    private void load(AnimationState state, String group, double ticksPerFrame, boolean loop) {
         String path = "/sprites/" + group + "/" + spriteId + "/" + state.name().toLowerCase();
         sprite.setAnimation(state, SpriteAnimation.load(path, ticksPerFrame, loop));
     }
