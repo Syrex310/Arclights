@@ -17,6 +17,7 @@ public class Operator extends GameEntity {
     private final int gridY;
     private Direction facing;
     private int attackCooldownTimer;
+    private boolean attackTriggered;
     private final List<Enemy> blockedEnemies = new ArrayList<>();
     protected List<Point2D> relativeRangeOffsets = new ArrayList<>(); // Relative (col, row) offsets
 
@@ -137,10 +138,19 @@ public class Operator extends GameEntity {
 
             if (target != null) {
                 target.takeDamage(getAtk(), getAttackType()); 
+            attackTriggered = true;
                 System.out.println("Operator attacked enemy! Enemy HP: " + target.getHp()); 
                 attackCooldownTimer = (int) getAttackInterval(); 
             }
         }
+    }
+
+
+    /** Returns true once when this operator performs an attack. */
+    public boolean consumeAttackTriggered() {
+        boolean triggered = attackTriggered;
+        attackTriggered = false;
+        return triggered;
     }
 
     private Enemy findTargetInGridRange(List<Enemy> activeEnemies) {

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import com.arclights.animation.EntityAnimationController;
 import com.arclights.entity.enemy.Enemy;
 import com.arclights.entity.enemy.EnemyType;
 import com.arclights.models.GameMap;
@@ -17,10 +18,11 @@ import com.arclights.ui.MapRenderer;
 
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
+
 
 public class EnemyManager {
     private final List<Enemy> activeEnemies = new ArrayList<>();
+    private final Map<Enemy, EntityAnimationController> animations = new HashMap<>();
     private final List<Point2D> enemyPath = new ArrayList<>();
     private final Pane root;
     private final GameMap gameMap;
@@ -176,14 +178,27 @@ public class EnemyManager {
         );
         activeEnemies.add(enemy);
 
-        Circle enemySprite = new Circle(type.getRadius(), type.getColor());
-        enemySprite.centerXProperty().bind(enemy.xProperty());
-        enemySprite.centerYProperty().bind(enemy.yProperty());
+        double spriteSize = Math.min(tileWidth, tileHeight) * 0.78;
+        EntityAnimationController animation = new EntityAnimationController(
+            enemy,
+            type.name(),
+            true,
+            type.getRadius(),
+            type.getColor(),
+            spriteSize,
+            spriteSize
+        );
+        animations.put(enemy, animation);
+
+        javafx.scene.Node enemySprite = animation.getSprite().getNode();
+        enemySprite.layoutXProperty().bind(enemy.xProperty().subtract(spriteSize / 2.0));
+        enemySprite.layoutYProperty().bind(enemy.yProperty().subtract(spriteSize / 2.0));
         root.getChildren().add(enemySprite);
 
         enemy.isAliveProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
-                root.getChildren().remove(enemySprite);
+                // Keep the node alive until the death animation has played.
+                // update() removes the entity/node after the death animation finishes.
             }
         });
     }
@@ -191,8 +206,24 @@ public class EnemyManager {
     public void update() {
         activeEnemies.removeIf(enemy -> !enemy.isAlive());
         for (Enemy enemy : activeEnemies) {
-            enemy.update();
-            enemy.updateGridPosition(offsetX, offsetY, tileWidth, tileHeight, paddingX, paddingY); // Synchronize grid pos
+            EntityAnimationController animation = animations.get(enemy);
+            if (enemy.isAlive()) {
+                enemy.update();
+                enemy.updateGridPosition(offsetX, offsetY, tileWidth, tileHeight, paddingX, paddingY); // Synchronize grid pos
+            }
+            if (animation != null) animation.update();
+        }
+
+        // Remove dead enemies only after their death animation has finished.
+        var iterator = activeEnemies.iterator();
+        while (iterator.hasNext()) {
+            Enemy enemy = iterator.next();
+            EntityAnimationController animation = animations.get(enemy);
+            if (!enemy.isAlive() && (animation == null || animation.getSprite().isCurrentAnimationFinished())) {
+                if (animation != null) root.getChildren().remove(animation.getSprite().getNode());
+                animations.remove(enemy);
+                iterator.remove();
+            }
         }
     }
 

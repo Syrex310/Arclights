@@ -127,7 +127,7 @@ public class MapRenderer {
         double offsetX;
         double offsetY = config.getOffsetY();
 
-        // 1. Determine Tile Size & Offsets based on MapConfig
+        // Determine Tile Size & Offsets based on MapConfig
         if (config.isAutoCalculateTileSize()) {
             double tileSizeW = (windowWidth - 100) / gameMap.getCols();
             double tileSizeH = (windowHeight - 100) / gameMap.getRows();
@@ -146,7 +146,6 @@ public class MapRenderer {
             offsetX = config.getOffsetX();
         }
 
-        // 2. Render dynamic map background image first
         ImageView background = UILoader.createImageView(config.getBackgroundImagePath());
         if (background != null) {
             background.setFitWidth(windowWidth);
@@ -155,7 +154,7 @@ public class MapRenderer {
             root.getChildren().add(background);
         }
 
-        // 3. Render grid tiles (e.g. interactive overlays & debug outlines)
+        // interactive overlays & debug
         drawInteractiveGrid(root, gameMap, tileWidth, tileHeight, paddingX, paddingY, offsetX, offsetY);
 
         return new RenderResult(tileWidth, tileHeight, paddingX, paddingY, offsetX, offsetY);

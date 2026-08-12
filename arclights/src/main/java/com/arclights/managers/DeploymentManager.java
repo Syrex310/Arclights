@@ -1,8 +1,11 @@
 package com.arclights.managers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.arclights.animation.EntityAnimationController;
 import com.arclights.entity.enemy.Enemy;
 import com.arclights.entity.operator.Defender;
 import com.arclights.entity.operator.Operator;
@@ -22,6 +25,7 @@ public class DeploymentManager {
     public enum SelectionState { NONE, DRAGGING_SNIPER, DRAGGING_DEFENDER, SELECTING_DIRECTION }
 
     private final List<Operator> activeOperators = new ArrayList<>();
+    private final Map<Operator, EntityAnimationController> animations = new HashMap<>();
     private final List<Rectangle> rangePreviewNodes = new ArrayList<>();
     private final Pane root;
 
@@ -222,7 +226,30 @@ public class DeploymentManager {
         if (currentState != SelectionState.SELECTING_DIRECTION || pendingOperator == null) return;
 
         pendingTile.setOccupied(true);
+
+        if (finalOpSprite != null) root.getChildren().remove(finalOpSprite);
+        if (finalDirectionArrow != null) root.getChildren().remove(finalDirectionArrow);
+
         activeOperators.add(pendingOperator);
+
+        // Create the real animated sprite only after deployment is confirmed.
+        double spriteSize = Math.min(tileWidth, tileHeight) * 0.78;
+        Color fallbackColor = pendingOperator.isGround() ? Color.BLUE : Color.GREEN;
+        EntityAnimationController animation = new EntityAnimationController(
+            pendingOperator,
+            pendingOperator.getClass().getSimpleName(),
+            false,
+            spriteSize * 0.35,
+            fallbackColor,
+            spriteSize,
+            spriteSize
+        );
+        animations.put(pendingOperator, animation);
+
+        javafx.scene.Node operatorSprite = animation.getSprite().getNode();
+        operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize / 2.0));
+        operatorSprite.layoutYProperty().bind(pendingOperator.yProperty().subtract(spriteSize / 2.0));
+        root.getChildren().add(operatorSprite);
 
         currentState = SelectionState.NONE;
         pendingOperator = null;
@@ -281,6 +308,11 @@ public class DeploymentManager {
     public void update(List<Enemy> activeEnemies) {
         for (Operator op : activeOperators) {
             op.update(activeEnemies);
+            EntityAnimationController animation = animations.get(op);
+            if (animation != null) {
+                if (op.consumeAttackTriggered()) animation.triggerAttack();
+                animation.update();
+            }
         }
     }
 }
