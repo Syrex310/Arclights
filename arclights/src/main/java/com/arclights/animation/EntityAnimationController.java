@@ -42,7 +42,7 @@ public final class EntityAnimationController {
     public AnimatedSprite getSprite() { return sprite; }
 
     public void triggerAttack() {
-        attackTicksRemaining = 12;
+        attackTicksRemaining = Math.max(1, (int) entity.getAttackInterval());
         sprite.play(AnimationState.ATTACK);
     }
 
@@ -55,7 +55,14 @@ public final class EntityAnimationController {
 
         if (attackTicksRemaining > 0) {
             attackTicksRemaining--;
-            sprite.play(AnimationState.ATTACK);
+            if (sprite.getCurrentState() == AnimationState.ATTACK
+                && !sprite.isCurrentAnimationFinished()) {
+                    sprite.play(AnimationState.ATTACK);
+                }
+            else {
+                sprite.play(AnimationState.IDLE);
+            }
+            
         } else if (enemy) {
             Enemy e = (Enemy) entity;
             sprite.play(e.isBlocked() ? AnimationState.IDLE : AnimationState.WALK);

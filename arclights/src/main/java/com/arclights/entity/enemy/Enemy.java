@@ -3,6 +3,7 @@ package com.arclights.entity.enemy;
 import java.util.List;
 
 import com.arclights.entity.GameEntity;
+import com.arclights.entity.operator.Operator;
 
 import javafx.geometry.Point2D;
 
@@ -11,6 +12,11 @@ public class Enemy extends GameEntity {
     private List<Point2D> waypoints;
     private int currentWaypointIndex;
     private boolean isBlocked = false;
+
+    // The operator currently blocking this enemy (null if not blocked)
+    private Operator blockedByOperator;
+    private int attackCooldownTimer = 0;
+    private boolean attackTriggered = false;
 
     // Track current grid column & row for clean operator targeting
     private int currentGridX;
@@ -24,7 +30,7 @@ public class Enemy extends GameEntity {
             atk,
             1,
             AttackType.PHYSICAL,
-            1.5,
+            60,
             0.0,
             0.0,
             true,
@@ -48,7 +54,10 @@ public class Enemy extends GameEntity {
     public void update() {
         if (!isAlive() || waypoints == null || currentWaypointIndex >= waypoints.size()) return;
 
-        if (isBlocked()) return;
+        if (isBlocked()) {
+            attackBlockingOperator();
+            return;
+        }
 
         // Get our current target checkpoint
         Point2D target = waypoints.get(currentWaypointIndex);
@@ -72,6 +81,30 @@ public class Enemy extends GameEntity {
     }
 
     /**
+     * While blocked, the enemy attacks the operator holding it in place on
+     * an interval mirroring Operator's own attack-cooldown pattern.
+     */
+    private void attackBlockingOperator() {
+        if (blockedByOperator == null || !blockedByOperator.isAlive()) return;
+
+        if (attackCooldownTimer > 0) {
+            attackCooldownTimer--;
+        } else {
+            blockedByOperator.takeDamage(getAtk(), getAttackType());
+            attackTriggered = true;
+            System.out.println("Enemy attacked operator! Operator HP: " + blockedByOperator.getHp());
+            attackCooldownTimer = (int) getAttackInterval();
+        }
+    }
+
+    /** Returns true once when this enemy performs an attack on the blocking operator. */
+    public boolean consumeAttackTriggered() {
+        boolean triggered = attackTriggered;
+        attackTriggered = false;
+        return triggered;
+    }
+
+    /**
      * Helper to update current grid location from layout parameters (called by EnemyManager)
      */
     public void updateGridPosition(double offsetX, double offsetY, double tileWidth, double tileHeight, double paddingX, double paddingY) {
@@ -86,6 +119,16 @@ public class Enemy extends GameEntity {
     // Getters and Setters for Enemy
     public boolean isBlocked() { return isBlocked; }
     public void setBlocked(boolean blocked) { this.isBlocked = blocked; }
+
+    public Operator getBlockedBy() { return blockedByOperator; }
+    public void setBlockedBy(Operator operator) {
+        this.blockedByOperator = operator;
+        // Reset the cooldown so a newly-blocking operator isn't hit instantly
+        // by leftover cooldown state from a previous blocker.
+        if (operator == null) {
+            attackCooldownTimer = 0;
+        }
+    }
 
     public double getSpeed() { return speed; }
     public void setSpeed(double speed) { this.speed = speed; }

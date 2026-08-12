@@ -163,7 +163,10 @@ public class App extends Application {
             deploymentBar.getDefenderGroup()
         );
 
-        enemyManager.spawnEnemy(EnemyType.BOSS);
+        enemyManager.spawnEnemy(EnemyType.BIG_BOB);
+        enemyManager.spawnEnemy(EnemyType.ORIGINIUM_SLUG);
+        enemyManager.spawnEnemy(EnemyType.HOUND);
+        enemyManager.spawnEnemy(EnemyType.SOLDIER);
 
         gameLoop = new AnimationTimer() {
             private long lastTime = 0;

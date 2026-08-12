@@ -178,7 +178,7 @@ public class EnemyManager {
         );
         activeEnemies.add(enemy);
 
-        double spriteSize = Math.min(tileWidth, tileHeight) * 1.4;
+        double spriteSize = Math.min(tileWidth, tileHeight) * 2.0;
         EntityAnimationController animation = new EntityAnimationController(
             enemy,
             type.name(),
@@ -204,23 +204,41 @@ public class EnemyManager {
     }
 
     public void update() {
-        activeEnemies.removeIf(enemy -> !enemy.isAlive());
         for (Enemy enemy : activeEnemies) {
             EntityAnimationController animation = animations.get(enemy);
+
             if (enemy.isAlive()) {
                 enemy.update();
-                enemy.updateGridPosition(offsetX, offsetY, tileWidth, tileHeight, paddingX, paddingY); // Synchronize grid pos
+                enemy.updateGridPosition(
+                    offsetX,
+                    offsetY,
+                    tileWidth,
+                    tileHeight,
+                    paddingX,
+                    paddingY
+                );
             }
-            if (animation != null) animation.update();
+
+            if (animation != null) {
+                if (enemy.consumeAttackTriggered()) animation.triggerAttack();
+                animation.update();
+            }
         }
 
-        // Remove dead enemies only after their death animation has finished.
         var iterator = activeEnemies.iterator();
+
         while (iterator.hasNext()) {
             Enemy enemy = iterator.next();
             EntityAnimationController animation = animations.get(enemy);
-            if (!enemy.isAlive() && (animation == null || animation.getSprite().isCurrentAnimationFinished())) {
-                if (animation != null) root.getChildren().remove(animation.getSprite().getNode());
+
+            if (!enemy.isAlive()
+                    && (animation == null
+                        || animation.getSprite().isCurrentAnimationFinished())) {
+
+                if (animation != null) {
+                    root.getChildren().remove(animation.getSprite().getNode());
+                }
+
                 animations.remove(enemy);
                 iterator.remove();
             }

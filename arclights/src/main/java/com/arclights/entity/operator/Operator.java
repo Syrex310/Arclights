@@ -100,6 +100,7 @@ public class Operator extends GameEntity {
         if (!isAlive()) {
             for (Enemy enemy : blockedEnemies) {
                 enemy.setBlocked(false);
+                enemy.setBlockedBy(null);
             }
             blockedEnemies.clear();
             return;
@@ -120,6 +121,7 @@ public class Operator extends GameEntity {
                     if (getRemainingBlockCount() >= enemy.getBlockCount()) {
                         blockedEnemies.add(enemy);
                         enemy.setBlocked(true);
+                        enemy.setBlockedBy(this);
                         System.out.println("Enemy blocked at grid (" + gridX + ", " + gridY + ")! Remaining Block: " + getRemainingBlockCount());
                     }
                 }

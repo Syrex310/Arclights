@@ -6,7 +6,7 @@ public enum EnemyType {
     ORIGINIUM_SLUG(1000, 10, 1.0, Color.RED, 15),
     SOLDIER(1800, 30, 0.7, Color.BLUE, 18),
     HOUND(600, 20, 2.2, Color.ORANGE, 12),
-    BOSS(5000, 100, 0.4, Color.PURPLE, 25);
+    BIG_BOB(5000, 100, 0.4, Color.PURPLE, 25);
 
     private final double hp;
     private final double atk;
