@@ -171,14 +171,20 @@ public class EnemyManager {
         Enemy enemy = new Enemy(
             calcX(spawnCol), 
             calcY(spawnRow), 
-            type.getHp(), 
-            type.getAtk(), 
-            type.getSpeed(), 
+            type.getHp(),
+            type.getAtk(),
+            type.getBlockCount(),
+            type.getAttackType(),
+            type.getAttackInterval(),
+            type.getResistance(),
+            type.isGround(),
+            type.getDefense(),
+            type.getSpeed(),
             enemyPath
         );
         activeEnemies.add(enemy);
 
-        double spriteSize = Math.min(tileWidth, tileHeight) * 2.0;
+        double spriteSize = Math.min(tileWidth, tileHeight) * 1.7;
         EntityAnimationController animation = new EntityAnimationController(
             enemy,
             type.name(),
@@ -191,8 +197,8 @@ public class EnemyManager {
         animations.put(enemy, animation);
 
         javafx.scene.Node enemySprite = animation.getSprite().getNode();
-        enemySprite.layoutXProperty().bind(enemy.xProperty().subtract(spriteSize / 2.0));
-        enemySprite.layoutYProperty().bind(enemy.yProperty().subtract(spriteSize / 2.0));
+        enemySprite.layoutXProperty().bind(enemy.xProperty().subtract(spriteSize * 0.5));
+        enemySprite.layoutYProperty().bind(enemy.yProperty().subtract(spriteSize * 0.75));
         root.getChildren().add(enemySprite);
 
         enemy.isAliveProperty().addListener((observable, oldValue, newValue) -> {

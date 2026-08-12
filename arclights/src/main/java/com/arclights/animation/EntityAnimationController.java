@@ -11,6 +11,8 @@ public final class EntityAnimationController {
     private final GameEntity entity;
     private final boolean enemy;
     private final String spriteId;
+    private final double spriteWidth;
+    private final double spriteHeight;
     private int attackTicksRemaining;
 
     public EntityAnimationController(GameEntity entity, String spriteId, boolean enemy,
@@ -19,6 +21,8 @@ public final class EntityAnimationController {
         this.entity = entity;
         this.enemy = enemy;
         this.spriteId = spriteId.toLowerCase();
+        this.spriteWidth = spriteWidth;
+        this.spriteHeight = spriteHeight;
         this.sprite = new AnimatedSprite(fallbackRadius, fallbackColor);
         this.sprite.setFitSize(spriteWidth, spriteHeight);
         loadAnimations();
@@ -36,7 +40,7 @@ public final class EntityAnimationController {
 
     private void load(AnimationState state, String group, double ticksPerFrame, boolean loop) {
         String path = "/sprites/" + group + "/" + spriteId + "/" + state.name().toLowerCase();
-        sprite.setAnimation(state, SpriteAnimation.load(path, ticksPerFrame, loop));
+        sprite.setAnimation(state, SpriteAnimation.load(path, ticksPerFrame, loop, spriteWidth, spriteHeight));
     }
 
     public AnimatedSprite getSprite() { return sprite; }
