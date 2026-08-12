@@ -233,7 +233,7 @@ public class DeploymentManager {
         activeOperators.add(pendingOperator);
 
         // Create the real animated sprite only after deployment is confirmed.
-        double spriteSize = Math.min(tileWidth, tileHeight) * 0.78;
+        double spriteSize = Math.min(tileWidth, tileHeight) * 2.9;
         Color fallbackColor = pendingOperator.isGround() ? Color.BLUE : Color.GREEN;
         EntityAnimationController animation = new EntityAnimationController(
             pendingOperator,
@@ -247,8 +247,8 @@ public class DeploymentManager {
         animations.put(pendingOperator, animation);
 
         javafx.scene.Node operatorSprite = animation.getSprite().getNode();
-        operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize / 2.0));
-        operatorSprite.layoutYProperty().bind(pendingOperator.yProperty().subtract(spriteSize / 2.0));
+        operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize * 0.5));
+        operatorSprite.layoutYProperty().bind(pendingOperator.yProperty().subtract(spriteSize * 0.75));
         root.getChildren().add(operatorSprite);
 
         currentState = SelectionState.NONE;
