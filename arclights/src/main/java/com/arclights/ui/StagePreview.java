@@ -36,10 +36,11 @@ public class StagePreview {
         cardsBox.setPrefWidth(680);
         cardsBox.setAlignment(Pos.CENTER);
 
-        Pane card1 = createStageCard("01-01", "TRAINING GROUND", "Standard operation layout for new doctor onboarding.", MapPresets.LEVEL_1, "#ff9b00", callbacks);
-        Pane card2 = createStageCard("01-02", "NARROW PASSAGE", "Defensive tactics exercise in a constrained corridor.", MapPresets.LEVEL_2, "#00a2ff", callbacks);
+        Pane card1 = createStageCard("01-01", "TRAINING GROUND", "Standard operation layout for new doctor onboarding.", MapPresets.STAGE_1_1.getLayout(), "#ff9b00", callbacks);
+        Pane card2 = createStageCard("01-02", "NARROW PASSAGE", "Defensive tactics exercise in a constrained corridor.", MapPresets.STAGE_1_2.getLayout(), "#00a2ff", callbacks);
+        Pane card3 = createStageCard("01-03", "MAP 1-1", "Test.", MapPresets.STAGE_1_3.getLayout(), "#00ff55", callbacks);
 
-        cardsBox.getChildren().addAll(card1, card2);
+        cardsBox.getChildren().addAll(card1, card2, card3);
         root.getChildren().add(cardsBox);
 
         return new Scene(root, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);

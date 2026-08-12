@@ -1,28 +1,40 @@
 package com.arclights.managers;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import com.arclights.animation.EntityAnimationController;
 import com.arclights.entity.enemy.Enemy;
 import com.arclights.entity.enemy.EnemyType;
 import com.arclights.models.GameMap;
 import com.arclights.models.Tile;
+import com.arclights.ui.MapRenderer;
 
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
+
 
 public class EnemyManager {
     private final List<Enemy> activeEnemies = new ArrayList<>();
+    private final Map<Enemy, EntityAnimationController> animations = new HashMap<>();
     private final List<Point2D> enemyPath = new ArrayList<>();
     private final Pane root;
     private final GameMap gameMap;
+    
+    // Grid alignment parameters
+    private final double tileWidth;
+    private final double tileHeight;
+    private final double paddingX;
+    private final double paddingY;
+    private final double offsetX;
+    private final double offsetY;
+
     private int spawnRow = 1;
     private int spawnCol = 0;
 
@@ -42,9 +54,31 @@ public class EnemyManager {
         }
     }
 
-    public EnemyManager(Pane root, GameMap gameMap) {
+    // Constructor updated to accept render dimensions
+    public EnemyManager(Pane root, GameMap gameMap, MapRenderer.RenderResult renderResult) {
         this.root = root;
         this.gameMap = gameMap;
+        this.tileWidth = renderResult.tileWidth;
+        this.tileHeight = renderResult.tileHeight;
+        this.paddingX = renderResult.paddingX;
+        this.paddingY = renderResult.paddingY;
+        this.offsetX = renderResult.offsetX;
+        this.offsetY = renderResult.offsetY;
+        
+        initPath();
+    }
+
+    // Overloaded constructor if passing parameters individually
+    public EnemyManager(Pane root, GameMap gameMap, double tileWidth, double tileHeight, double paddingX, double paddingY, double offsetX, double offsetY) {
+        this.root = root;
+        this.gameMap = gameMap;
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
+        this.paddingX = paddingX;
+        this.paddingY = paddingY;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+
         initPath();
     }
 
@@ -79,7 +113,7 @@ public class EnemyManager {
             targetCol = 7;
         }
 
-        // BFS pathfinding from (spawnRow, spawnCol) to (targetRow, targetCol)
+        // Pathfinding: (spawnRow, spawnCol) -> (targetRow, targetCol)
         Queue<GridPoint> queue = new LinkedList<>();
         Set<GridPoint> visited = new HashSet<>();
         Map<GridPoint, GridPoint> parentMap = new HashMap<>();
@@ -137,39 +171,91 @@ public class EnemyManager {
         Enemy enemy = new Enemy(
             calcX(spawnCol), 
             calcY(spawnRow), 
-            type.getHp(), 
-            type.getAtk(), 
-            type.getSpeed(), 
+            type.getHp(),
+            type.getAtk(),
+            type.getBlockCount(),
+            type.getAttackType(),
+            type.getAttackInterval(),
+            type.getResistance(),
+            type.isGround(),
+            type.getDefense(),
+            type.getSpeed(),
             enemyPath
         );
         activeEnemies.add(enemy);
 
-        // Visual sprite mapped to type values
-        Circle enemySprite = new Circle(type.getRadius(), type.getColor());
-        enemySprite.centerXProperty().bind(enemy.xProperty()); //[cite: 3]
-        enemySprite.centerYProperty().bind(enemy.yProperty()); //[cite: 3]
-        root.getChildren().add(enemySprite); //[cite: 3]
+        double spriteSize = Math.min(tileWidth, tileHeight) * 1.7;
+        EntityAnimationController animation = new EntityAnimationController(
+            enemy,
+            type.name(),
+            true,
+            type.getRadius(),
+            type.getColor(),
+            spriteSize,
+            spriteSize
+        );
+        animations.put(enemy, animation);
 
-        // This listener will now trigger correctly because isAlive changes inside takeDamage()
+        javafx.scene.Node enemySprite = animation.getSprite().getNode();
+        enemySprite.layoutXProperty().bind(enemy.xProperty().subtract(spriteSize * 0.5));
+        enemySprite.layoutYProperty().bind(enemy.yProperty().subtract(spriteSize * 0.75));
+        root.getChildren().add(enemySprite);
+
         enemy.isAliveProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
-                root.getChildren().remove(enemySprite); // Remove the visual sprite[cite: 3]
+                // Keep the node alive until the death animation has played.
+                // update() removes the entity/node after the death animation finishes.
             }
         });
     }
 
     public void update() {
-        // Remove dead enemies from memory loop
-        activeEnemies.removeIf(enemy -> !enemy.isAlive()); //[cite: 3]
         for (Enemy enemy : activeEnemies) {
-            enemy.update(); //[cite: 3]
+            EntityAnimationController animation = animations.get(enemy);
+
+            if (enemy.isAlive()) {
+                enemy.update();
+                enemy.updateGridPosition(
+                    offsetX,
+                    offsetY,
+                    tileWidth,
+                    tileHeight,
+                    paddingX,
+                    paddingY
+                );
+            }
+
+            if (animation != null) {
+                if (enemy.consumeAttackTriggered()) animation.triggerAttack();
+                animation.update();
+            }
+        }
+
+        var iterator = activeEnemies.iterator();
+
+        while (iterator.hasNext()) {
+            Enemy enemy = iterator.next();
+            EntityAnimationController animation = animations.get(enemy);
+
+            if (!enemy.isAlive()
+                    && (animation == null
+                        || animation.getSprite().isCurrentAnimationFinished())) {
+
+                if (animation != null) {
+                    root.getChildren().remove(animation.getSprite().getNode());
+                }
+
+                animations.remove(enemy);
+                iterator.remove();
+            }
         }
     }
 
     public List<Enemy> getActiveEnemies() {
-        return activeEnemies; //[cite: 3]
+        return activeEnemies;
     }
 
-    private double calcX(int col) { return col * 62 + 50 + 30; } //[cite: 3]
-    private double calcY(int row) { return row * 62 + 50 + 30; } //[cite: 3]
+    // Dynamic pixel position formulas aligned to tile centers
+    private double calcX(int col) { return offsetX + (col * (tileWidth + paddingX)) + (tileWidth / 2.0); }
+    private double calcY(int row) { return offsetY + (row * (tileHeight + paddingY)) + (tileHeight / 2.0); }
 }

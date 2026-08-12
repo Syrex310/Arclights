@@ -1,14 +1,18 @@
 package com.arclights.managers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.arclights.animation.EntityAnimationController;
 import com.arclights.entity.enemy.Enemy;
 import com.arclights.entity.operator.Defender;
 import com.arclights.entity.operator.Operator;
 import com.arclights.entity.operator.Sniper;
 import com.arclights.models.GameMap;
 import com.arclights.models.Tile;
+import com.arclights.ui.MapRenderer;
 
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
@@ -21,8 +25,17 @@ public class DeploymentManager {
     public enum SelectionState { NONE, DRAGGING_SNIPER, DRAGGING_DEFENDER, SELECTING_DIRECTION }
 
     private final List<Operator> activeOperators = new ArrayList<>();
+    private final Map<Operator, EntityAnimationController> animations = new HashMap<>();
     private final List<Rectangle> rangePreviewNodes = new ArrayList<>();
     private final Pane root;
+
+    // Dynamic map alignment layout metrics
+    private double tileWidth;
+    private double tileHeight;
+    private double paddingX;
+    private double paddingY;
+    private double offsetX;
+    private double offsetY;
 
     private SelectionState currentState = SelectionState.NONE;
     private Tile pendingTile;
@@ -42,6 +55,14 @@ public class DeploymentManager {
     public DeploymentManager(Pane root) {
         this.root = root;
         
+        // Default fallbacks in case layout info isn't passed immediately
+        this.tileWidth = 62;
+        this.tileHeight = 62;
+        this.paddingX = 2;
+        this.paddingY = 2;
+        this.offsetX = 50;
+        this.offsetY = 50;
+
         // Setup hidden tracking ghost
         this.dragGhost = new Circle(20, Color.rgb(255, 255, 255, 0.6));
         this.dragGhost.setVisible(false);
@@ -49,10 +70,24 @@ public class DeploymentManager {
         this.root.getChildren().add(this.dragGhost);
     }
 
+    /**
+     * Call this when map layout metrics are calculated by MapRenderer.
+     */
+    public void updateMapLayout(MapRenderer.RenderResult renderResult) {
+        this.tileWidth = renderResult.tileWidth;
+        this.tileHeight = renderResult.tileHeight;
+        this.paddingX = renderResult.paddingX;
+        this.paddingY = renderResult.paddingY;
+        this.offsetX = renderResult.offsetX;
+        this.offsetY = renderResult.offsetY;
+    }
+
     public SelectionState getCurrentState() { return currentState; }
 
     public void startDrag(SelectionState dragType) {
         this.currentState = dragType;
+        double minSize = Math.min(tileWidth, tileHeight);
+        dragGhost.setRadius(minSize * 0.35); // Scale ghost proportionally to minimum tile dimension
         dragGhost.setFill(dragType == SelectionState.DRAGGING_DEFENDER ? Color.rgb(0, 0, 255, 0.6) : Color.rgb(0, 255, 0, 0.6));
         dragGhost.setVisible(true);
     }
@@ -63,13 +98,13 @@ public class DeploymentManager {
         dragGhost.setCenterX(x);
         dragGhost.setCenterY(y);
 
-        // Map pixel hover back to grid row/col coordinates
-        int col = (int) ((x - 50) / 62);
-        int row = (int) ((y - 50) / 62);
+        // Convert dynamic mouse position back to row/col grid coordinates
+        int col = (int) Math.floor((x - offsetX) / (tileWidth + paddingX));
+        int row = (int) Math.floor((y - offsetY) / (tileHeight + paddingY));
 
         clearRangePreview();
 
-        // If hovering over a valid tile space, show a temporary range preview layout
+        // If hovering over a valid tile space, show temporary range preview
         if (row >= 0 && row < gameMap.getRows() && col >= 0 && col < gameMap.getCols()) {
             Tile tile = gameMap.getTile(row, col);
             if (!tile.isOccupied()) {
@@ -81,7 +116,7 @@ public class DeploymentManager {
                 }
 
                 if (tempOp != null) {
-                    //showRangePreview(tempOp);
+                    showRangePreview(tempOp);
                 }
             }
         }
@@ -91,8 +126,8 @@ public class DeploymentManager {
         dragGhost.setVisible(false);
         if (currentState == SelectionState.NONE || currentState == SelectionState.SELECTING_DIRECTION) return;
 
-        int col = (int) ((x - 50) / 62);
-        int row = (int) ((y - 50) / 62);
+        int col = (int) Math.floor((x - offsetX) / (tileWidth + paddingX));
+        int row = (int) Math.floor((y - offsetY) / (tileHeight + paddingY));
 
         if (row >= 0 && row < gameMap.getRows() && col >= 0 && col < gameMap.getCols()) {
             Tile tile = gameMap.getTile(row, col);
@@ -105,31 +140,45 @@ public class DeploymentManager {
                 }
 
                 if (pendingOperator != null) {
+                    pendingOperator.setX(calcCenterX(col));
+                    pendingOperator.setY(calcCenterY(row));
+                    
                     pendingTile = tile;
                     pendingCol = col;
                     pendingRow = row;
                     currentState = SelectionState.SELECTING_DIRECTION;
 
-                    // Initialize swipe tracking coords to unit tile's center as a healthy default/fallback
-                    this.directionStartX = pendingOperator.getX();
-                    this.directionStartY = pendingOperator.getY();
+                    // Compute true center pixel coordinates of the tile
+                    double opCenterX = calcCenterX(col);
+                    double opCenterY = calcCenterY(row);
+
+                    // Initialize swipe tracking coords to unit tile's center
+                    this.directionStartX = opCenterX;
+                    this.directionStartY = opCenterY;
 
                     // Lock preliminary unit layout circle in place
-                    finalOpSprite = new Circle(pendingOperator.isGround() ? 20 : 18);
+                    double minDimension = Math.min(tileWidth, tileHeight);
+                    double radius = minDimension * (pendingOperator.isGround() ? 0.32 : 0.28);
+                    finalOpSprite = new Circle(radius);
                     finalOpSprite.setFill(pendingOperator.isGround() ? Color.BLUE : Color.GREEN);
-                    finalOpSprite.setCenterX(pendingOperator.getX());
-                    finalOpSprite.setCenterY(pendingOperator.getY());
+                    finalOpSprite.setCenterX(opCenterX);
+                    finalOpSprite.setCenterY(opCenterY);
                     root.getChildren().add(finalOpSprite);
 
                     // Add navigation direction arrow asset
                     finalDirectionArrow = new Polygon();
-                    finalDirectionArrow.getPoints().addAll(new Double[]{ 0.0, -8.0, -6.0, 4.0, 6.0, 4.0 });
+                    double arrowScale = minDimension / 62.0; // Scale arrow relative to tile dimension
+                    finalDirectionArrow.getPoints().addAll(new Double[]{ 
+                        0.0 * arrowScale, -8.0 * arrowScale, 
+                        -6.0 * arrowScale,  4.0 * arrowScale, 
+                         6.0 * arrowScale,  4.0 * arrowScale 
+                    });
                     finalDirectionArrow.setFill(Color.GOLD);
-                    finalDirectionArrow.setTranslateX(pendingOperator.getX());
-                    finalDirectionArrow.setTranslateY(pendingOperator.getY());
+                    finalDirectionArrow.setTranslateX(opCenterX);
+                    finalDirectionArrow.setTranslateY(opCenterY);
                     root.getChildren().add(finalDirectionArrow);
 
-                    //showRangePreview(pendingOperator);
+                    showRangePreview(pendingOperator);
                     return;
                 }
             }
@@ -140,12 +189,10 @@ public class DeploymentManager {
         clearRangePreview();
     }
 
-
     public void setDirectionDragStart(double x, double y) {
         this.directionStartX = x;
         this.directionStartY = y;
     }
-
 
     public void handleDirectionDrag(double mouseX, double mouseY) {
         if (currentState != SelectionState.SELECTING_DIRECTION || pendingOperator == null) return;
@@ -172,14 +219,37 @@ public class DeploymentManager {
             case WEST:  finalDirectionArrow.setRotate(270); break;
         }
 
-        //showRangePreview(pendingOperator);
+        showRangePreview(pendingOperator);
     }
 
     public void confirmDeployment() {
         if (currentState != SelectionState.SELECTING_DIRECTION || pendingOperator == null) return;
 
         pendingTile.setOccupied(true);
+
+        if (finalOpSprite != null) root.getChildren().remove(finalOpSprite);
+        if (finalDirectionArrow != null) root.getChildren().remove(finalDirectionArrow);
+
         activeOperators.add(pendingOperator);
+
+        // Create the real animated sprite only after deployment is confirmed.
+        double spriteSize = Math.min(tileWidth, tileHeight) * 0.78;
+        Color fallbackColor = pendingOperator.isGround() ? Color.BLUE : Color.GREEN;
+        EntityAnimationController animation = new EntityAnimationController(
+            pendingOperator,
+            pendingOperator.getClass().getSimpleName(),
+            false,
+            spriteSize * 0.35,
+            fallbackColor,
+            spriteSize,
+            spriteSize
+        );
+        animations.put(pendingOperator, animation);
+
+        javafx.scene.Node operatorSprite = animation.getSprite().getNode();
+        operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize / 2.0));
+        operatorSprite.layoutYProperty().bind(pendingOperator.yProperty().subtract(spriteSize / 2.0));
+        root.getChildren().add(operatorSprite);
 
         currentState = SelectionState.NONE;
         pendingOperator = null;
@@ -194,10 +264,14 @@ public class DeploymentManager {
         clearRangePreview();
         List<Point2D> tiles = op.getAbsoluteRangeTiles();
         for (Point2D tilePos : tiles) {
-            Rectangle rect = new Rectangle(60, 60);
+            Rectangle rect = new Rectangle(tileWidth, tileHeight);
             rect.setFill(Color.rgb(255, 69, 0, 0.3));
-            rect.setX(tilePos.getX() * 62 + 50);
-            rect.setY(tilePos.getY() * 62 + 50);
+            
+            int c = (int) tilePos.getX();
+            int r = (int) tilePos.getY();
+            
+            rect.setX(c * (tileWidth + paddingX) + offsetX);
+            rect.setY(r * (tileHeight + paddingY) + offsetY);
             rect.setMouseTransparent(true);
             
             root.getChildren().add(rect);
@@ -212,19 +286,32 @@ public class DeploymentManager {
         rangePreviewNodes.clear();
     }
 
+    // Dynamic grid coordinate helper formulas
+    private double calcCenterX(int col) {
+        return offsetX + (col * (tileWidth + paddingX)) + (tileWidth / 2.0);
+    }
+
+    private double calcCenterY(int row) {
+        return offsetY + (row * (tileHeight + paddingY)) + (tileHeight / 2.0);
+    }
+
     public double getGameSpeedMultiplier() {
-        // If the player is actively dragging a card or swiping a direction, drop speed to 0.1x
         if (currentState == SelectionState.DRAGGING_SNIPER || 
             currentState == SelectionState.DRAGGING_DEFENDER || 
             currentState == SelectionState.SELECTING_DIRECTION) {
-            return 1.0; //Specify later
+            return 0;
         }
-        return 1.0; // Normal speed
+        return 1.0;
     }
 
     public void update(List<Enemy> activeEnemies) {
         for (Operator op : activeOperators) {
             op.update(activeEnemies);
+            EntityAnimationController animation = animations.get(op);
+            if (animation != null) {
+                if (op.consumeAttackTriggered()) animation.triggerAttack();
+                animation.update();
+            }
         }
     }
 }

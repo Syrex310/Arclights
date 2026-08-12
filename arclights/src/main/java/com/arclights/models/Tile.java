@@ -7,7 +7,7 @@ public class Tile {
         RANGED_HIGH_GROUND, 
         ENEMY_SPAWN,       
         PLAYER_OBJECTIVE,  
-        HOLE_PIT           
+        DECORATION
     }
 
     public enum DeploymentType {
@@ -29,7 +29,7 @@ public class Tile {
 
     public boolean canPlaceMelee() {
         if (isOccupied) return false;
-        return (deploymentType == DeploymentType.MELEE_ONLY || deploymentType == DeploymentType.NONE) || deploymentType == DeploymentType.ANY;
+        return deploymentType == DeploymentType.MELEE_ONLY || deploymentType == DeploymentType.ANY;
     }
 
     public boolean canPlaceRanged() {
@@ -40,8 +40,7 @@ public class Tile {
     public boolean isWalkableForEnemies() {
         return tileType == TileType.MELEE_GROUND 
             || tileType == TileType.ENEMY_SPAWN 
-            || tileType == TileType.PLAYER_OBJECTIVE
-            || tileType == TileType.HOLE_PIT;
+            || tileType == TileType.PLAYER_OBJECTIVE;
     }
 
     public boolean isEnemyPath() {
