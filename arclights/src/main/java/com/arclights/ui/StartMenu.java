@@ -1,7 +1,10 @@
 package com.arclights.ui;
 
+import com.arclights.models.PlayerProgress;
+
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -26,6 +29,23 @@ public class StartMenu {
         //Character
         ImageView sakikoChar = UILoader.createImageView("/com/arclights/Togawa_Sakiko_Elite_2.png", -220, -340, 1440, 1280);
         root.getChildren().add(sakikoChar);
+
+        // TEMP: crystal counter, middle-left. Placeholder styling until proper HUD art exists.
+        Label crystalLabel = new Label();
+        crystalLabel.textProperty().bind(
+            javafx.beans.binding.Bindings.concat("\uD83D\uDC8E  ", PlayerProgress.crystalsProperty().asString())
+        );
+        crystalLabel.setStyle(
+            "-fx-text-fill: #7fdfff; " +
+            "-fx-font-size: 22px; " +
+            "-fx-font-weight: bold; " +
+            "-fx-background-color: rgba(0, 0, 0, 0.45); " +
+            "-fx-background-radius: 6px; " +
+            "-fx-padding: 8px 16px;"
+        );
+        crystalLabel.setLayoutX(20);
+        crystalLabel.setLayoutY(UILoader.WINDOW_HEIGHT / 2.0 - 15);
+        root.getChildren().add(crystalLabel);
 
         //Left
         VBox newsTerminal = new VBox();

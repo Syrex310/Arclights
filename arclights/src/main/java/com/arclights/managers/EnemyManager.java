@@ -15,6 +15,7 @@ import com.arclights.entity.enemy.Enemy;
 import com.arclights.entity.enemy.EnemyType;
 import com.arclights.models.GameMap;
 import com.arclights.models.GridPoint;
+import com.arclights.models.PlayerProgress;
 import com.arclights.models.Tile;
 import com.arclights.models.wave.SpawnEntry;
 import com.arclights.models.wave.WaveConfig;
@@ -63,6 +64,16 @@ public class EnemyManager {
     private boolean gameOver = false;
     private Runnable onGameOverCallback;
     private IntConsumer onLivesChangedCallback;
+
+    // Killing any enemy (as opposed to it leaking through to the objective)
+    // rewards crystals.
+    public static final int CRYSTALS_PER_KILL = 10;
+
+    // Stage-clear detection: once every scheduled wave has finished spawning
+    // and no enemies remain alive on the field, the stage counts as cleared.
+    private boolean waveConfigLoaded = false;
+    private boolean stageCleared = false;
+    private Runnable onStageClearCallback;
 
     // Constructor updated to accept render dimensions
     public EnemyManager(Pane root, GameMap gameMap, MapRenderer.RenderResult renderResult) {
@@ -277,6 +288,8 @@ public class EnemyManager {
         this.scheduledSpawns = waveConfig != null ? waveConfig.flatten() : new ArrayList<>();
         this.nextScheduledIndex = 0;
         this.elapsedSeconds = 0;
+        this.waveConfigLoaded = true;
+        this.stageCleared = false;
     }
 
     /** Processes due spawns from the loaded WaveConfig, if any. Called once per simulated frame from update(). */
@@ -360,11 +373,33 @@ public class EnemyManager {
 
                 animations.remove(enemy);
                 iterator.remove();
+
+                // Actually killed (not leaked through) -> reward crystals.
+                PlayerProgress.addCrystals(CRYSTALS_PER_KILL);
             }
 
             if (gameOver) break; // stop processing remaining enemies once defeat triggers this frame
         }
+
+        checkStageClear();
     }
+
+    /** Fires the stage-clear callback once, the moment every scheduled wave has spawned and the field is empty. */
+    private void checkStageClear() {
+        if (gameOver || stageCleared || !waveConfigLoaded) return;
+
+        if (isWaveSpawningFinished() && activeEnemies.isEmpty()) {
+            stageCleared = true;
+            if (onStageClearCallback != null) {
+                onStageClearCallback.run();
+            }
+        }
+    }
+
+    public boolean isStageCleared() { return stageCleared; }
+
+    /** Registers a callback fired exactly once, the moment the stage is cleared (all waves spawned + field empty). */
+    public void setOnStageClear(Runnable callback) { this.onStageClearCallback = callback; }
 
     /** Deducts one base life. Fires the game-over callback once lives reach zero. */
     private void loseLife() {
