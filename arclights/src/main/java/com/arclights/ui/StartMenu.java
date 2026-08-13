@@ -16,6 +16,7 @@ public class StartMenu {
     public interface MenuCallbacks {
         void onTerminalClick();
         void onOperatorsClick();
+        void onShopClick();
         void onExitClick();
     }
 
@@ -74,13 +75,13 @@ public class StartMenu {
 
         //Row 3
         Button shopButton = UILoader.createImageButton("/com/arclights/ui/Menu/btn_shop.png", 75, 0, 210, 120);
-        shopButton.setOnAction(e -> callbacks.onOperatorsClick());
+        shopButton.setOnAction(e -> callbacks.onShopClick());
 
         Button recruitButton = UILoader.createImageButton("/com/arclights/ui/Menu/btn_recruit_normal.png", 60, 0, 165, 120);
-        recruitButton.setOnAction(e -> callbacks.onOperatorsClick());
+        recruitButton.setOnAction(e -> callbacks.onShopClick());
 
         Button headhuntButton = UILoader.createImageButton("/com/arclights/ui/Menu/btn_recruit_advanced.png", 60, 0, 165, 120);
-        headhuntButton.setOnAction(e -> callbacks.onOperatorsClick());
+        headhuntButton.setOnAction(e -> callbacks.onShopClick());
 
         ImageView recruitGroupButton = UILoader.createImageView("/com/arclights/ui/Menu/grp_recruit.png", -271, 7, 313, 40);
 

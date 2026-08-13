@@ -14,6 +14,7 @@ import com.arclights.ui.OperatorDeploymentBar;
 import com.arclights.ui.OperatorListView;
 import com.arclights.ui.StagePreview;
 import com.arclights.ui.StartMenu;
+import com.arclights.ui.ShopMenu;
 import com.arclights.ui.UILoader;
 
 import javafx.animation.AnimationTimer;
@@ -51,6 +52,11 @@ public class App extends Application {
             }
 
             @Override
+            public void onShopClick() {
+                showShopScreen(stage);
+            }
+
+            @Override
             public void onExitClick() {
                 stage.close();
                 System.exit(0);
@@ -76,6 +82,10 @@ public class App extends Application {
 
     private void showOperatorScreen(Stage stage) {
         stage.setScene(OperatorListView.createScene(() -> showStartMenu(stage)));
+    }
+
+    private void showShopScreen(Stage stage) {
+        stage.setScene(ShopMenu.createScene(() -> showStartMenu(stage), () -> showOperatorScreen(stage)));
     }
 
     private void startGame(Stage stage, char[][] levelLayout, String levelName) {

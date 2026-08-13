@@ -32,9 +32,11 @@ public class PlayerProgress {
     // written to the properties file. None of the current stage display
     // names ("1-1 Main Corridor", etc.) contain it.
     private static final String CLEARED_STAGES_DELIMITER = "|";
+    private static final String OWNED_OPERATORS_DELIMITER = "|";
 
     private static final IntegerProperty crystals = new SimpleIntegerProperty(0);
     private static final Set<String> clearedStages = new HashSet<>();
+    private static final Set<String> ownedOperators = new HashSet<>();
 
     static {
         load();
@@ -51,6 +53,34 @@ public class PlayerProgress {
         if (amount == 0) return;
         crystals.set(Math.max(0, crystals.get() + amount));
         save();
+    }
+
+    /** Returns true if the player has recruited this operator. */
+    public static boolean ownsOperator(String operatorId) {
+        return operatorId != null && ownedOperators.contains(operatorId);
+    }
+
+    /** Returns a snapshot of all recruited operator IDs. */
+    public static Set<String> getOwnedOperators() {
+        return new HashSet<>(ownedOperators);
+    }
+
+    /**
+     * Purchases an operator with crystals. Returns false when the operator is
+     * already owned or there are not enough crystals.
+     */
+    public static boolean purchaseOperator(String operatorId, int cost) {
+        if (operatorId == null || ownedOperators.contains(operatorId) || cost < 0) {
+            return false;
+        }
+        if (crystals.get() < cost) {
+            return false;
+        }
+
+        crystals.set(crystals.get() - cost);
+        ownedOperators.add(operatorId);
+        save();
+        return true;
     }
 
     /** True if this stage (keyed by its display name, e.g. "1-1 Main Corridor") has never been cleared. */
@@ -96,6 +126,16 @@ public class PlayerProgress {
                 }
             }
         }
+
+        ownedOperators.clear();
+        String owned = props.getProperty("ownedOperators", "");
+        if (!owned.isBlank()) {
+            for (String operatorId : owned.split("\\Q" + OWNED_OPERATORS_DELIMITER + "\\E")) {
+                if (!operatorId.isBlank()) {
+                    ownedOperators.add(operatorId);
+                }
+            }
+        }
     }
 
     /** Persists current progress to disk. Silently no-ops on failure (e.g. read-only filesystem). */
@@ -103,6 +143,7 @@ public class PlayerProgress {
         Properties props = new Properties();
         props.setProperty("crystals", String.valueOf(crystals.get()));
         props.setProperty("clearedStages", String.join(CLEARED_STAGES_DELIMITER, clearedStages));
+        props.setProperty("ownedOperators", String.join(OWNED_OPERATORS_DELIMITER, ownedOperators));
 
         try {
             Files.createDirectories(SAVE_DIR);
