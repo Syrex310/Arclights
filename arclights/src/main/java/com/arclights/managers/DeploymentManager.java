@@ -13,6 +13,7 @@ import com.arclights.entity.operator.Sniper;
 import com.arclights.models.GameMap;
 import com.arclights.models.Tile;
 import com.arclights.ui.MapRenderer;
+import com.arclights.ui.OperatorSkillPanel;
 
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
@@ -28,6 +29,7 @@ public class DeploymentManager {
     private final Map<Operator, EntityAnimationController> animations = new HashMap<>();
     private final List<Rectangle> rangePreviewNodes = new ArrayList<>();
     private final Pane root;
+    private final OperatorSkillPanel skillPanel;
 
     // Dynamic map alignment layout metrics
     private double tileWidth;
@@ -54,6 +56,8 @@ public class DeploymentManager {
 
     public DeploymentManager(Pane root) {
         this.root = root;
+        this.skillPanel = new OperatorSkillPanel();
+        this.root.getChildren().add(skillPanel.getRoot());
         
         // Default fallbacks in case layout info isn't passed immediately
         this.tileWidth = 62;
@@ -247,6 +251,11 @@ public class DeploymentManager {
         animations.put(pendingOperator, animation);
 
         javafx.scene.Node operatorSprite = animation.getSprite().getNode();
+        final Operator deployedOperator = pendingOperator;
+        operatorSprite.setOnMouseClicked(event -> {
+            skillPanel.selectOperator(deployedOperator);
+            event.consume();
+        });
         operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize * 0.435));
         operatorSprite.layoutYProperty().bind(pendingOperator.yProperty().subtract(spriteSize * 0.75));
         root.getChildren().add(operatorSprite);
@@ -313,6 +322,7 @@ public class DeploymentManager {
                 animation.update();
             }
         }
+        skillPanel.refresh();
 
         var iterator = activeOperators.iterator();
 

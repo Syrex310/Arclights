@@ -1,10 +1,23 @@
 package com.arclights.entity.operator;
 
 import javafx.geometry.Point2D;
+import com.arclights.entity.operator.skill.OperatorSkill;
+import com.arclights.entity.operator.skill.SkillActivationType;
+import com.arclights.entity.operator.skill.SkillRecoveryType;
 
 public class Sniper extends Operator {
     public Sniper(double gridX, double gridY) {
         super(gridX, gridY, 800, 70, 1, AttackType.PHYSICAL, 45, 0, 20, false);
+
+        setSkill(new OperatorSkill(
+            "Precision Burst",
+            SkillRecoveryType.AUTO,
+            SkillActivationType.DURATION,
+            20,      // 20 SP
+            1.20,    // +20% ATK while active
+            1.0,
+            20.0     // 20 seconds
+        ));
         
 
         this.relativeRangeOffsets.add(new Point2D(0, 0));  // Own tile

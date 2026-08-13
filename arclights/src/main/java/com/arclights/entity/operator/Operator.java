@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.arclights.entity.GameEntity;
 import com.arclights.entity.enemy.Enemy;
+import com.arclights.entity.operator.skill.OperatorSkill;
 
 import javafx.geometry.Point2D;
 
@@ -18,6 +19,7 @@ public class Operator extends GameEntity {
     private Direction facing;
     private int attackCooldownTimer;
     private boolean attackTriggered;
+    private OperatorSkill skill;
     private final List<Enemy> blockedEnemies = new ArrayList<>();
     protected List<Point2D> relativeRangeOffsets = new ArrayList<>(); // Relative (col, row) offsets
 
@@ -34,6 +36,7 @@ public class Operator extends GameEntity {
         this.gridY = gridY;
         this.attackCooldownTimer = 0;
         this.facing = Direction.EAST; // Default facing configuration
+        this.skill = null;
     }
 
     // Overloaded constructor for fallback / default pixel calculation if needed
@@ -97,6 +100,10 @@ public class Operator extends GameEntity {
     }
 
     public void update(List<Enemy> activeEnemies) {
+        if (skill != null) {
+            skill.update();
+        }
+
         if (!isAlive()) {
             for (Enemy enemy : blockedEnemies) {
                 enemy.setBlocked(false);
@@ -139,14 +146,37 @@ public class Operator extends GameEntity {
             }
 
             if (target != null) {
-                target.takeDamage(getAtk(), getAttackType()); 
+                double damage = getAtk();
+                if (skill != null) {
+                    damage = skill.modifyAttackDamage(damage);
+                }
+
+                target.takeDamage(damage, getAttackType());
+                if (skill != null) {
+                    skill.onAttack();
+                }
+
                 attackTriggered = true;
-                System.out.println("Operator attacked enemy! Enemy HP: " + target.getHp()); 
+                System.out.println("Operator attacked enemy! Damage: " + damage + " | Enemy HP: " + target.getHp()); 
                 attackCooldownTimer = (int) getAttackInterval(); 
             }
         }
     }
 
+
+
+    public void setSkill(OperatorSkill skill) {
+        this.skill = skill;
+    }
+
+    public OperatorSkill getSkill() {
+        return skill;
+    }
+
+    /** Activates the operator's skill if enough SP has been collected. */
+    public boolean activateSkill() {
+        return skill != null && skill.activate();
+    }
 
     /** Returns true once when this operator performs an attack. */
     public boolean consumeAttackTriggered() {
