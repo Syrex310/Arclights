@@ -233,13 +233,13 @@ public class DeploymentManager {
         activeOperators.add(pendingOperator);
 
         // Create the real animated sprite only after deployment is confirmed.
-        double spriteSize = Math.min(tileWidth, tileHeight) * 2.9;
+        double spriteSize = Math.min(tileWidth, tileHeight) * 2.5;
         Color fallbackColor = pendingOperator.isGround() ? Color.BLUE : Color.GREEN;
         EntityAnimationController animation = new EntityAnimationController(
             pendingOperator,
             pendingOperator.getClass().getSimpleName(),
             false,
-            spriteSize * 0.35,
+            18,
             fallbackColor,
             spriteSize,
             spriteSize
@@ -247,7 +247,7 @@ public class DeploymentManager {
         animations.put(pendingOperator, animation);
 
         javafx.scene.Node operatorSprite = animation.getSprite().getNode();
-        operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize * 0.5));
+        operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize * 0.435));
         operatorSprite.layoutYProperty().bind(pendingOperator.yProperty().subtract(spriteSize * 0.75));
         root.getChildren().add(operatorSprite);
 
@@ -299,7 +299,7 @@ public class DeploymentManager {
         if (currentState == SelectionState.DRAGGING_SNIPER || 
             currentState == SelectionState.DRAGGING_DEFENDER || 
             currentState == SelectionState.SELECTING_DIRECTION) {
-            return 0;
+            return 0.1;
         }
         return 1.0;
     }
@@ -311,6 +311,25 @@ public class DeploymentManager {
             if (animation != null) {
                 if (op.consumeAttackTriggered()) animation.triggerAttack();
                 animation.update();
+            }
+        }
+
+        var iterator = activeOperators.iterator();
+
+        while (iterator.hasNext()) {
+            Operator op = iterator.next();
+            EntityAnimationController animation = animations.get(op);
+
+            if (!op.isAlive()
+                    && (animation == null
+                        || animation.getSprite().isCurrentAnimationFinished())) {
+
+                if (animation != null) {
+                    root.getChildren().remove(animation.getSprite().getNode());
+                }
+
+                animations.remove(op);
+                iterator.remove();
             }
         }
     }

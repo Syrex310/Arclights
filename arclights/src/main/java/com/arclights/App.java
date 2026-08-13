@@ -1,12 +1,13 @@
 package com.arclights;
 
-import com.arclights.entity.enemy.EnemyType;
 import com.arclights.handlers.InputController;
 import com.arclights.managers.DeploymentManager;
 import com.arclights.managers.EnemyManager;
 import com.arclights.models.GameMap;
 import com.arclights.models.MapConfig;
 import com.arclights.models.MapPresets;
+import com.arclights.models.wave.StageWaveConfigs;
+import com.arclights.models.wave.WaveConfig;
 import com.arclights.ui.MapRenderer;
 import com.arclights.ui.OperatorDeploymentBar;
 import com.arclights.ui.OperatorListView;
@@ -16,6 +17,7 @@ import com.arclights.ui.UILoader;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -88,6 +90,12 @@ public class App extends Application {
         deploymentManager.updateMapLayout(layout);
 
         EnemyManager enemyManager = new EnemyManager(root, gameMap, layout);
+        enemyManager.setOnGameOver(() -> {
+            if (gameLoop != null) {
+                gameLoop.stop();
+            }
+            showDefeatOverlay(stage, root);
+        });
 
         Label statusLabel = new Label(
                 "Level: " + levelName + " | Drag & release to deploy");
@@ -163,10 +171,8 @@ public class App extends Application {
             deploymentBar.getDefenderGroup()
         );
 
-        enemyManager.spawnEnemy(EnemyType.BIG_BOB);
-        enemyManager.spawnEnemy(EnemyType.ORIGINIUM_SLUG);
-        enemyManager.spawnEnemy(EnemyType.HOUND);
-        enemyManager.spawnEnemy(EnemyType.SOLDIER);
+        WaveConfig waveConfig = StageWaveConfigs.getConfigForLayout(levelLayout);
+        enemyManager.loadWaveConfig(waveConfig);
 
         gameLoop = new AnimationTimer() {
             private long lastTime = 0;
@@ -197,6 +203,39 @@ public class App extends Application {
 
         Scene scene = new Scene(root, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
         stage.setScene(scene);
+    }
+
+    /**
+     * Full-screen defeat overlay shown once the base runs out of lives.
+     * Blocks further interaction with the field (it sits on top and
+     * captures clicks) and returns to stage select on click anywhere.
+     */
+    private void showDefeatOverlay(Stage stage, Pane root) {
+        Pane overlay = new Pane();
+        overlay.setPrefSize(UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
+        overlay.setMinSize(UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
+        overlay.setStyle("-fx-background-color: rgba(10, 0, 0, 0.82); -fx-cursor: hand;");
+
+        Label defeatLabel = new Label("DEFEAT");
+        defeatLabel.setStyle(
+            "-fx-text-fill: #dc3545; " +
+            "-fx-font-size: 64px; " +
+            "-fx-font-family: 'Arial'; " +
+            "-fx-font-weight: 900;"
+        );
+
+        Label subLabel = new Label("The objective was overrun. Click anywhere to return to base.");
+        subLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 15px;");
+
+        VBox messageBox = new VBox(15, defeatLabel, subLabel);
+        messageBox.setAlignment(Pos.CENTER);
+        messageBox.setPrefWidth(UILoader.WINDOW_WIDTH);
+        messageBox.setLayoutY((UILoader.WINDOW_HEIGHT / 2.0) - 60);
+
+        overlay.getChildren().add(messageBox);
+        overlay.setOnMouseClicked(e -> showStageSelect(stage));
+
+        root.getChildren().add(overlay);
     }
 
     public static void main(String[] args) {

@@ -140,7 +140,7 @@ public class Operator extends GameEntity {
 
             if (target != null) {
                 target.takeDamage(getAtk(), getAttackType()); 
-            attackTriggered = true;
+                attackTriggered = true;
                 System.out.println("Operator attacked enemy! Enemy HP: " + target.getHp()); 
                 attackCooldownTimer = (int) getAttackInterval(); 
             }

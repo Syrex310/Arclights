@@ -69,9 +69,16 @@ public final class EntityAnimationController {
                     sprite.play(AnimationState.ATTACK);
                 }
             else {
-                sprite.play(AnimationState.IDLE);
+                if (enemy) {
+                    Enemy e = (Enemy) entity;
+                    sprite.play(e.isBlocked() ? AnimationState.IDLE : AnimationState.WALK);
+                    sprite.setFacingWest(false);
+                } else {
+                    Operator op = (Operator) entity;
+                    sprite.setFacingWest(op.getFacing() == Operator.Direction.WEST);
+                    sprite.play(AnimationState.IDLE);
+                }
             }
-            
         } else if (enemy) {
             Enemy e = (Enemy) entity;
             sprite.play(e.isBlocked() ? AnimationState.IDLE : AnimationState.WALK);

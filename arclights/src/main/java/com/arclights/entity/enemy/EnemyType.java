@@ -5,9 +5,9 @@ import com.arclights.entity.GameEntity;
 import javafx.scene.paint.Color;
 
 public enum EnemyType {
-    ORIGINIUM_SLUG(550, 130, 1, GameEntity.AttackType.PHYSICAL, 102, 0, true, 0,  1.0, Color.RED, 15),
-    SOLDIER(2750, 300, 1, GameEntity.AttackType.PHYSICAL, 120, 0, true, 130, 1.1, Color.BLUE, 20),
-    HOUND(820, 190, 1, GameEntity.AttackType.PHYSICAL, 84, 20, true, 0, 1.9, Color.ORANGE, 18),
+    ORIGINIUM_SLUG(550, 130, 1, GameEntity.AttackType.PHYSICAL, 102, 0, true, 0,  1.0, Color.RED, 12),
+    SOLDIER(2750, 300, 1, GameEntity.AttackType.PHYSICAL, 120, 0, true, 130, 1.1, Color.BLUE, 18),
+    HOUND(820, 190, 1, GameEntity.AttackType.PHYSICAL, 84, 20, true, 0, 1.9, Color.ORANGE, 15),
     BIG_BOB(22000, 1900, 1, GameEntity.AttackType.PHYSICAL, 360, 30, true, 800, 0.5, Color.PURPLE, 25);
 
     private final double hp;
