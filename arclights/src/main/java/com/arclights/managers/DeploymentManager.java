@@ -237,7 +237,7 @@ public class DeploymentManager {
         activeOperators.add(pendingOperator);
 
         // Create the real animated sprite only after deployment is confirmed.
-        double spriteSize = Math.min(tileWidth, tileHeight) * 2.5;
+        double spriteSize = Math.min(tileWidth, tileHeight) * 2.35;
         Color fallbackColor = pendingOperator.isGround() ? Color.BLUE : Color.GREEN;
         EntityAnimationController animation = new EntityAnimationController(
             pendingOperator,

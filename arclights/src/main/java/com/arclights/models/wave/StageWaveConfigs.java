@@ -1,10 +1,10 @@
 package com.arclights.models.wave;
 
+import java.util.Arrays;
+
 import com.arclights.entity.enemy.EnemyType;
 import com.arclights.models.GridPoint;
 import com.arclights.models.MapPresets;
-
-import java.util.Arrays;
 
 /**
  * Per-stage wave definitions, keyed off the same char[][] layout instances
@@ -37,14 +37,15 @@ public class StageWaveConfigs {
             .build(),
         Wave.builder()
             .label("Wave 2")
-            .startDelay(8.0) // relative to wave 1's start
-            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 0))
-            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 1.5))
-            .spawn(SpawnEntry.of(EnemyType.HOUND, 3.0))
+            .startDelay(25.0) // relative to wave 1's start
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 0))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 1.0))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 3))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 1))
             .build(),
         Wave.builder()
             .label("Wave 3 - Boss")
-            .startDelay(8.0)
+            .startDelay(25.0)
             .spawn(SpawnEntry.of(EnemyType.BIG_BOB, 0))
             .spawn(SpawnEntry.of(EnemyType.SOLDIER, 1.0))
             .spawn(SpawnEntry.of(EnemyType.SOLDIER, 2.0))
@@ -93,9 +94,11 @@ public class StageWaveConfigs {
                 new GridPoint(1, 4),
                 new GridPoint(2, 4),
                 new GridPoint(3, 4),
-                new GridPoint(4, 4),
+                new GridPoint(3, 5),
+                new GridPoint(4, 5),
                 new GridPoint(5, 5),
                 new GridPoint(6, 5)
+
             )))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.BIG_BOB, 2.0, 3, 0))
             .build()

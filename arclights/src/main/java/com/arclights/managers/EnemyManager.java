@@ -254,7 +254,7 @@ public class EnemyManager {
         );
         activeEnemies.add(enemy);
 
-        double spriteSize = Math.min(tileWidth, tileHeight) * 2.5;
+        double spriteSize = Math.min(tileWidth, tileHeight) * 2.15;
         EntityAnimationController animation = new EntityAnimationController(
             enemy,
             type.name(),

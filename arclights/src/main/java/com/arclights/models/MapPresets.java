@@ -1,5 +1,7 @@
 package com.arclights.models;
 
+import com.arclights.models.MapPresets.StageData;
+
 public class MapPresets {
 
     public static class StageData {
@@ -19,19 +21,19 @@ public class MapPresets {
     }
 
     public static final char[][] LEVEL_1_LAYOUT = {
-        {'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'},
-        {'S', 'M', 'M', 'M', 'M', 'M', 'M', 'H'},
-        {'H', 'H', 'H', 'M', 'M', 'H', 'M', 'H'},
-        {'H', 'H', 'H', 'M', 'M', 'M', 'M', 'O'},
-        {'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'},
-        {'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'}
+        {'D', 'H', 'H', 'H', 'H', 'H', 'H', 'H'},
+        {'S', 'M', 'H', 'M', 'M', 'M', 'M', 'M'},
+        {'D', 'M', 'M', 'M', 'H', 'M', 'M', 'O'},
+        {'D', 'H', 'H', 'H', 'H', 'H', 'H', 'H'},
+        {'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'}
     };
     public static final StageData STAGE_1_1 = new StageData(
-        "1-1 Main Corridor",
+        "Starter",
         LEVEL_1_LAYOUT,
-        new MapConfig("/com/arclights/map1-1.png", 64.0, 120.0, 80.0, 2.0)
+        new MapConfig("/com/arclights/map1-0(1).png", 81, 81, 270, 150, 0, 0)
     );
 
+    //skip
     public static final char[][] LEVEL_2_LAYOUT = {
         {'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'},
         {'S', 'M', 'M', 'M', 'M', 'M', 'M', 'O'},
@@ -53,15 +55,32 @@ public class MapPresets {
         {'D', 'D', 'D', 'D', 'D', 'O', 'D', 'D', 'D'}
     };
     public static final StageData STAGE_1_3 = new StageData(
-        "1-3 Crossroads",
+        "Crossroad",
         LEVEL_3_LAYOUT,
         new MapConfig("/com/arclights/map1-1(8).png", 93.0, 91.3, 193.0, 5.5, 1.0, 0.0)
+    );
+
+    public static final char[][] LEVEL_4_LAYOUT = {
+        {'D', 'S', 'D', 'D', 'D', 'D', 'D', 'D', 'D'},
+        {'D', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'O'},
+        {'D', 'H', 'H', 'D', 'D', 'H', 'D', 'D', 'H'},
+        {'D', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H'},
+        {'S', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'O'},
+        {'S', 'M', 'M', 'M', 'M', 'M', 'H', 'M', 'H'},
+        {'D', 'H', 'H', 'H', 'H', 'M', 'H', 'M', 'H'},
+        {'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'}
+    };
+    public static final StageData STAGE_1_4 = new StageData(
+        "Infinite",
+        LEVEL_4_LAYOUT,
+        new MapConfig("/com/arclights/map-inf(1).png", 82, 81, 227, 0, 1, 0)
     );
 
     public static MapConfig getConfigForLayout(char[][] layout) {
         if (layout == LEVEL_1_LAYOUT) return STAGE_1_1.getConfig();
         if (layout == LEVEL_2_LAYOUT) return STAGE_1_2.getConfig();
         if (layout == LEVEL_3_LAYOUT) return STAGE_1_3.getConfig();
+        if (layout == LEVEL_4_LAYOUT) return STAGE_1_4.getConfig();
         return MapConfig.defaultConfig("/com/arclights/map1-1(8).png");
     }
 }
