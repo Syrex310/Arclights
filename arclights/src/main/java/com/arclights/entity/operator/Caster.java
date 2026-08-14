@@ -14,12 +14,12 @@ public class Caster extends Operator {
 
         setSkill(new OperatorSkill(
             "Heavy Strike",
-            SkillRecoveryType.OFFENSIVE,
-            SkillActivationType.NEXT_ATTACK,
-            2,
+            SkillRecoveryType.AUTO,
+            SkillActivationType.DURATION,
+            25,
+            1.5,
             1.0,
-            2.0,
-            0.0
+            20.0
         ));
         
         this.relativeRangeOffsets.add(new Point2D(0, -1));

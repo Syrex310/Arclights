@@ -14,7 +14,8 @@ import com.arclights.models.OperatorCatalog;
 import com.arclights.models.Tile;
 import com.arclights.ui.EntityLayer;
 import com.arclights.ui.MapRenderer;
-import com.arclights.ui.OperatorSkillPanel;
+import com.arclights.ui.OperatorSelectionOverlay;
+import com.arclights.ui.UILoader;
 
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
@@ -41,8 +42,10 @@ public class DeploymentManager {
     private final List<Rectangle> rangePreviewNodes = new ArrayList<>();
     private final Pane root;
     private final EntityLayer entityLayer;
-    private final OperatorSkillPanel skillPanel;
+    private final OperatorSelectionOverlay selectionOverlay;
     private final Map<Operator, Tile> operatorTiles = new HashMap<>();
+    private final Map<Operator, OperatorCatalog.Definition> operatorDefs = new HashMap<>();
+    private OperatorCatalog.Definition pendingOperatorDef;
 
     // Dynamic map alignment layout metrics
     private double tileWidth;
@@ -71,9 +74,18 @@ public class DeploymentManager {
     public DeploymentManager(Pane root, EntityLayer entityLayer) {
         this.root = root;
         this.entityLayer = entityLayer;
-        this.skillPanel = new OperatorSkillPanel();
-        this.root.getChildren().add(skillPanel.getRoot());
-        
+        this.selectionOverlay = new OperatorSelectionOverlay(root, UILoader.WINDOW_HEIGHT);
+
+        // Clicking anywhere that isn't the selection overlay itself (diamond,
+        // retreat/skill squares, stat panel) dismisses the current selection.
+        // Registered as a filter (capturing phase) so it never interferes
+        // with the normal press/drag/release handlers wired in InputController.
+        this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
+            if (selectionOverlay.isVisible() && !selectionOverlay.isPartOfOverlay((javafx.scene.Node) event.getTarget())) {
+                selectionOverlay.hide();
+            }
+        });
+
         // Default fallbacks in case layout info isn't passed immediately
         this.tileWidth = 62;
         this.tileHeight = 62;
@@ -175,6 +187,7 @@ public class DeploymentManager {
 
             if (canPlaceOn(tile, def)) {
                 pendingOperator = def.create(col, row);
+                pendingOperatorDef = def;
 
                 pendingOperator.setX(calcCenterX(col));
                 pendingOperator.setY(calcCenterY(row));
@@ -275,6 +288,7 @@ public class DeploymentManager {
         if (finalDirectionArrow != null) root.getChildren().remove(finalDirectionArrow);
 
         activeOperators.add(pendingOperator);
+        operatorDefs.put(pendingOperator, pendingOperatorDef);
 
         // Create the real animated sprite only after deployment is confirmed.
         double spriteSize = SpriteSizing.operatorSize(tileWidth, tileHeight);
@@ -293,8 +307,10 @@ public class DeploymentManager {
 
         javafx.scene.Node operatorSprite = animation.getSprite().getNode();
         final Operator deployedOperator = pendingOperator;
+        final OperatorCatalog.Definition deployedDef = pendingOperatorDef;
         operatorSprite.setOnMouseClicked(event -> {
-            skillPanel.selectOperator(deployedOperator);
+            selectionOverlay.show(deployedOperator, deployedDef, tileWidth, tileHeight,
+                () -> retreatOperator(deployedOperator));
             event.consume();
         });
         operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize * 0.435));
@@ -304,11 +320,42 @@ public class DeploymentManager {
         currentState = SelectionState.NONE;
         draggingOperatorId = null;
         pendingOperator = null;
+        pendingOperatorDef = null;
         pendingTile = null;
         finalOpSprite = null;
         finalDirectionArrow = null;
         clearRangePreview();
         System.out.println("Deployment bound locked successfully.");
+    }
+
+    /**
+     * Player-initiated retreat (clicked the retreat square on a selected
+     * operator). Pulls the operator off the field immediately: releases any
+     * enemy it was blocking, frees its tile, and removes its sprite - no
+     * death animation, no DP refund. Also dismisses the selection overlay
+     * since its target no longer exists.
+     */
+    private void retreatOperator(Operator operator) {
+        if (operator == null || !activeOperators.contains(operator)) return;
+
+        operator.retreat();
+
+        EntityAnimationController animation = animations.remove(operator);
+        if (animation != null) {
+            entityLayer.untrack(animation.getSprite().getNode());
+        }
+
+        Tile tile = operatorTiles.remove(operator);
+        if (tile != null) {
+            tile.setOccupied(false);
+        }
+
+        operatorDefs.remove(operator);
+        activeOperators.remove(operator);
+
+        if (selectionOverlay.getSelectedOperator() == operator) {
+            selectionOverlay.hide();
+        }
     }
 
     /** Aborts a pending placement (e.g. insufficient DP) and clears its preview visuals. */
@@ -322,6 +369,7 @@ public class DeploymentManager {
         currentState = SelectionState.NONE;
         draggingOperatorId = null;
         pendingOperator = null;
+        pendingOperatorDef = null;
         pendingTile = null;
         finalOpSprite = null;
         finalDirectionArrow = null;
@@ -382,7 +430,7 @@ public class DeploymentManager {
                 animation.update();
             }
         }
-        skillPanel.refresh();
+        selectionOverlay.refresh();
 
         var iterator = activeOperators.iterator();
 
@@ -403,7 +451,12 @@ public class DeploymentManager {
                     tile.setOccupied(false);
                 }
 
+                if (selectionOverlay.getSelectedOperator() == op) {
+                    selectionOverlay.hide();
+                }
+
                 animations.remove(op);
+                operatorDefs.remove(op);
                 iterator.remove();
             }
         }

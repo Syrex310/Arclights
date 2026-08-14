@@ -15,12 +15,13 @@ public class Sniper extends Operator {
 
         setSkill(new OperatorSkill(
             "Precision Burst",
-            SkillRecoveryType.AUTO,
-            SkillActivationType.DURATION,
-            20,      // 20 SP
-            1.20,    // +20% ATK while active
-            1.0,
-            20.0     // 20 seconds
+            SkillRecoveryType.OFFENSIVE,
+            SkillActivationType.NEXT_ATTACK,
+            4,
+            1.25,
+            1.25,
+            0,
+            true
         ));
         
 

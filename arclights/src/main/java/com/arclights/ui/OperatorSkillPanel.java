@@ -1,4 +1,4 @@
-package com.arclights.ui;
+/*package com.arclights.ui;
 
 import com.arclights.entity.operator.Operator;
 import com.arclights.entity.operator.skill.OperatorSkill;
@@ -8,7 +8,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
-/** Small in-operation panel used to select an operator and activate its skill. */
 public class OperatorSkillPanel {
     private final VBox root;
     private final Label operatorLabel;
@@ -98,3 +97,4 @@ public class OperatorSkillPanel {
         skillButton.setDisable(!skill.isReady() || skill.isActive());
     }
 }
+*/

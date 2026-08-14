@@ -15,6 +15,8 @@ public class OperatorSkill {
     private final double activeAtkMultiplier;
     private final double nextAttackDamageMultiplier;
     private final SkillEffect customEffect;
+    /** When true, the skill fires itself the instant it reaches full SP - no player click needed. */
+    private final boolean autoCast;
 
     private int currentSP;
     private int autoRecoveryTimer;
@@ -31,7 +33,26 @@ public class OperatorSkill {
             double nextAttackDamageMultiplier,
             double durationSeconds) {
         this(name, recoveryType, activationType, maxSP, activeAtkMultiplier,
-                nextAttackDamageMultiplier, durationSeconds, null);
+                nextAttackDamageMultiplier, durationSeconds, null, false);
+    }
+
+    /**
+     * Same as the 7-arg constructor, plus {@code autoCast}: pass {@code true}
+     * to have this skill activate itself automatically the moment it reaches
+     * full SP, instead of waiting for the player to click it. Defaults to
+     * {@code false} (manual activation) everywhere else.
+     */
+    public OperatorSkill(
+            String name,
+            SkillRecoveryType recoveryType,
+            SkillActivationType activationType,
+            int maxSP,
+            double activeAtkMultiplier,
+            double nextAttackDamageMultiplier,
+            double durationSeconds,
+            boolean autoCast) {
+        this(name, recoveryType, activationType, maxSP, activeAtkMultiplier,
+                nextAttackDamageMultiplier, durationSeconds, null, autoCast);
     }
 
     public OperatorSkill(
@@ -43,6 +64,24 @@ public class OperatorSkill {
             double nextAttackDamageMultiplier,
             double durationSeconds,
             SkillEffect customEffect) {
+        this(name, recoveryType, activationType, maxSP, activeAtkMultiplier,
+                nextAttackDamageMultiplier, durationSeconds, customEffect, false);
+    }
+
+    /**
+     * Full constructor. See the {@code autoCast}-only overload above for what
+     * {@code autoCast} does.
+     */
+    public OperatorSkill(
+            String name,
+            SkillRecoveryType recoveryType,
+            SkillActivationType activationType,
+            int maxSP,
+            double activeAtkMultiplier,
+            double nextAttackDamageMultiplier,
+            double durationSeconds,
+            SkillEffect customEffect,
+            boolean autoCast) {
         if (maxSP <= 0) throw new IllegalArgumentException("maxSP must be > 0");
         this.name = name;
         this.recoveryType = recoveryType;
@@ -52,6 +91,7 @@ public class OperatorSkill {
         this.nextAttackDamageMultiplier = nextAttackDamageMultiplier;
         this.durationTicks = Math.max(0, (int) Math.round(durationSeconds * TICKS_PER_SECOND));
         this.customEffect = customEffect;
+        this.autoCast = autoCast;
     }
 
     /** Called once per game tick. */
@@ -71,6 +111,13 @@ public class OperatorSkill {
                 remainingDurationTicks = 0;
                 if (customEffect != null) customEffect.onExpired();
             }
+        }
+
+        // Fire the moment SP is full if this skill is set to auto-cast.
+        // activate() already no-ops unless isReady() && !active && !nextAttackPending,
+        // so it's safe to call unconditionally every tick.
+        if (autoCast) {
+            activate();
         }
     }
 
@@ -137,4 +184,5 @@ public class OperatorSkill {
     public boolean isNextAttackPending() { return nextAttackPending; }
     public double getActiveAtkMultiplier() { return activeAtkMultiplier; }
     public double getNextAttackDamageMultiplier() { return nextAttackDamageMultiplier; }
+    public boolean isAutoCast() { return autoCast; }
 }

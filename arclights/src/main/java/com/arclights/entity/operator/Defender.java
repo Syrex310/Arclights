@@ -14,13 +14,13 @@ public class Defender extends Operator {
         super(gridX, gridY, 2000, 5, 3, AttackType.PHYSICAL, 60, 50, 100, true, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
-            "Heavy Strike",
-            SkillRecoveryType.OFFENSIVE,
-            SkillActivationType.NEXT_ATTACK,
-            3,       // 3 SP
+            "Turtle Shell",
+            SkillRecoveryType.AUTO,
+            SkillActivationType.DURATION,
+            20,
             1.0,
-            2.0,     // next attack deals 2x damage
-            0.0
+            1.0,
+            15.0
         ));
         
         this.relativeRangeOffsets.add(new Point2D(0, 0));

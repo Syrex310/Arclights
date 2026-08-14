@@ -213,6 +213,23 @@ public class Operator extends GameEntity {
         return skill != null && skill.activate();
     }
 
+    /**
+     * Pulls this operator off the field immediately (player-initiated
+     * retreat, as opposed to dying in combat). Releases whichever enemies
+     * it was currently blocking - mirroring the cleanup {@link #update}
+     * already does once an operator's HP hits zero - and marks it no
+     * longer alive so callers (DeploymentManager) can tear down its tile
+     * occupancy and sprite the same way a death is handled.
+     */
+    public void retreat() {
+        for (Enemy enemy : blockedEnemies) {
+            enemy.setBlocked(false);
+            enemy.setBlockedBy(null);
+        }
+        blockedEnemies.clear();
+        setIsAlive(false);
+    }
+
     /** Returns true once when this operator performs an attack. */
     public boolean consumeAttackTriggered() {
         boolean triggered = attackTriggered;
