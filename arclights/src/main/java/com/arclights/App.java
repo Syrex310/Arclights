@@ -9,6 +9,7 @@ import com.arclights.models.MapPresets;
 import com.arclights.models.PlayerProgress;
 import com.arclights.models.wave.StageWaveConfigs;
 import com.arclights.models.wave.WaveConfig;
+import com.arclights.ui.EntityLayer;
 import com.arclights.ui.MapRenderer;
 import com.arclights.ui.OperatorDeploymentBar;
 import com.arclights.ui.OperatorListView;
@@ -97,10 +98,16 @@ public class App extends Application {
 
         MapRenderer.RenderResult layout = MapRenderer.renderMap(root, gameMap, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT); // 1280 x 645
 
-        DeploymentManager deploymentManager = new DeploymentManager(root);
+        // Dedicated, depth-sorted layer for operator/enemy sprites, sitting
+        // right above the map tiles so entities lower on the map (larger Y)
+        // are drawn in front of entities higher up.
+        EntityLayer entityLayer = new EntityLayer();
+        root.getChildren().add(entityLayer.getPane());
+
+        DeploymentManager deploymentManager = new DeploymentManager(root, entityLayer);
         deploymentManager.updateMapLayout(layout);
 
-        EnemyManager enemyManager = new EnemyManager(root, gameMap, layout);
+        EnemyManager enemyManager = new EnemyManager(entityLayer, gameMap, layout);
         enemyManager.setOnGameOver(() -> {
             if (gameLoop != null) {
                 gameLoop.stop();
@@ -214,6 +221,7 @@ public class App extends Application {
                     enemyManager.update();
                     deploymentManager.update(enemyManager.getActiveEnemies());
                     deploymentBar.updateDeploymentPoints(deploymentManager.getCurrentDP(), deploymentManager.getMaxDP());
+                    entityLayer.sortByDepth();
                     accumulatedTime -= TARGET_FRAME_TIME;
                 }
             }

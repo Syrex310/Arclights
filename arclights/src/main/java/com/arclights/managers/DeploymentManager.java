@@ -12,6 +12,7 @@ import com.arclights.entity.operator.Operator;
 import com.arclights.entity.operator.Sniper;
 import com.arclights.models.GameMap;
 import com.arclights.models.Tile;
+import com.arclights.ui.EntityLayer;
 import com.arclights.ui.MapRenderer;
 import com.arclights.ui.OperatorSkillPanel;
 
@@ -39,6 +40,7 @@ public class DeploymentManager {
     private final Map<Operator, EntityAnimationController> animations = new HashMap<>();
     private final List<Rectangle> rangePreviewNodes = new ArrayList<>();
     private final Pane root;
+    private final EntityLayer entityLayer;
     private final OperatorSkillPanel skillPanel;
     private final Map<Operator, Tile> operatorTiles = new HashMap<>();
 
@@ -65,8 +67,9 @@ public class DeploymentManager {
     private double directionStartX;
     private double directionStartY;
 
-    public DeploymentManager(Pane root) {
+    public DeploymentManager(Pane root, EntityLayer entityLayer) {
         this.root = root;
+        this.entityLayer = entityLayer;
         this.skillPanel = new OperatorSkillPanel();
         this.root.getChildren().add(skillPanel.getRoot());
         
@@ -299,7 +302,7 @@ public class DeploymentManager {
         });
         operatorSprite.layoutXProperty().bind(pendingOperator.xProperty().subtract(spriteSize * 0.435));
         operatorSprite.layoutYProperty().bind(pendingOperator.yProperty().subtract(spriteSize * 0.75));
-        root.getChildren().add(operatorSprite);
+        entityLayer.track(operatorSprite, pendingOperator::getY);
 
         currentState = SelectionState.NONE;
         pendingOperator = null;
@@ -394,7 +397,7 @@ public class DeploymentManager {
                         || animation.getSprite().isCurrentAnimationFinished())) {
 
                 if (animation != null) {
-                    root.getChildren().remove(animation.getSprite().getNode());
+                    entityLayer.untrack(animation.getSprite().getNode());
                 }
 
                 Tile tile = operatorTiles.remove(op);

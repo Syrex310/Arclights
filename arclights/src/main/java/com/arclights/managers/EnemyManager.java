@@ -19,17 +19,17 @@ import com.arclights.models.PlayerProgress;
 import com.arclights.models.Tile;
 import com.arclights.models.wave.SpawnEntry;
 import com.arclights.models.wave.WaveConfig;
+import com.arclights.ui.EntityLayer;
 import com.arclights.ui.MapRenderer;
 
 import javafx.geometry.Point2D;
-import javafx.scene.layout.Pane;
 
 
 public class EnemyManager {
     private final List<Enemy> activeEnemies = new ArrayList<>();
     private final Map<Enemy, EntityAnimationController> animations = new HashMap<>();
     private final List<Point2D> enemyPath = new ArrayList<>();
-    private final Pane root;
+    private final EntityLayer entityLayer;
     private final GameMap gameMap;
     
     // Grid alignment parameters
@@ -76,8 +76,8 @@ public class EnemyManager {
     private Runnable onStageClearCallback;
 
     // Constructor updated to accept render dimensions
-    public EnemyManager(Pane root, GameMap gameMap, MapRenderer.RenderResult renderResult) {
-        this.root = root;
+    public EnemyManager(EntityLayer entityLayer, GameMap gameMap, MapRenderer.RenderResult renderResult) {
+        this.entityLayer = entityLayer;
         this.gameMap = gameMap;
         this.tileWidth = renderResult.tileWidth;
         this.tileHeight = renderResult.tileHeight;
@@ -90,8 +90,8 @@ public class EnemyManager {
     }
 
     // Overloaded constructor if passing parameters individually
-    public EnemyManager(Pane root, GameMap gameMap, double tileWidth, double tileHeight, double paddingX, double paddingY, double offsetX, double offsetY) {
-        this.root = root;
+    public EnemyManager(EntityLayer entityLayer, GameMap gameMap, double tileWidth, double tileHeight, double paddingX, double paddingY, double offsetX, double offsetY) {
+        this.entityLayer = entityLayer;
         this.gameMap = gameMap;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
@@ -269,7 +269,7 @@ public class EnemyManager {
         javafx.scene.Node enemySprite = animation.getSprite().getNode();
         enemySprite.layoutXProperty().bind(enemy.xProperty().subtract(spriteSize * 0.435));
         enemySprite.layoutYProperty().bind(enemy.yProperty().subtract(spriteSize * 0.75));
-        root.getChildren().add(enemySprite);
+        entityLayer.track(enemySprite, enemy::getY);
 
         enemy.isAliveProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
@@ -337,7 +337,7 @@ public class EnemyManager {
                 // and dock a life, mirroring the same iterator.remove()
                 // pattern used below for enemies that die in combat.
                 if (animation != null) {
-                    root.getChildren().remove(animation.getSprite().getNode());
+                    entityLayer.untrack(animation.getSprite().getNode());
                 }
                 animations.remove(enemy);
                 iterator.remove();
@@ -368,7 +368,7 @@ public class EnemyManager {
                         || animation.getSprite().isCurrentAnimationFinished())) {
 
                 if (animation != null) {
-                    root.getChildren().remove(animation.getSprite().getNode());
+                    entityLayer.untrack(animation.getSprite().getNode());
                 }
 
                 animations.remove(enemy);
