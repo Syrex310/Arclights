@@ -18,13 +18,15 @@ public class InputController {
     public void attachInputHandlers(Pane root, Pane sniperGroup, Pane defenderGroup) {
         // 1. Initial Press hooks on the deployment items
         sniperGroup.setOnMousePressed(event -> {
-            if (deploymentManager.getCurrentState() == DeploymentManager.SelectionState.NONE) {
+            if (deploymentManager.getCurrentState() == DeploymentManager.SelectionState.NONE
+                    && deploymentManager.canAfford(DeploymentManager.SelectionState.DRAGGING_SNIPER)) {
                 deploymentManager.startDrag(DeploymentManager.SelectionState.DRAGGING_SNIPER);
             }
         });
 
         defenderGroup.setOnMousePressed(event -> {
-            if (deploymentManager.getCurrentState() == DeploymentManager.SelectionState.NONE) {
+            if (deploymentManager.getCurrentState() == DeploymentManager.SelectionState.NONE
+                    && deploymentManager.canAfford(DeploymentManager.SelectionState.DRAGGING_DEFENDER)) {
                 deploymentManager.startDrag(DeploymentManager.SelectionState.DRAGGING_DEFENDER);
             }
         });

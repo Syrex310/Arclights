@@ -213,6 +213,7 @@ public class App extends Application {
                 while (accumulatedTime >= TARGET_FRAME_TIME) {
                     enemyManager.update();
                     deploymentManager.update(enemyManager.getActiveEnemies());
+                    deploymentBar.updateDeploymentPoints(deploymentManager.getCurrentDP(), deploymentManager.getMaxDP());
                     accumulatedTime -= TARGET_FRAME_TIME;
                 }
             }

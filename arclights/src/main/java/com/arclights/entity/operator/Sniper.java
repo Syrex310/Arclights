@@ -6,8 +6,11 @@ import com.arclights.entity.operator.skill.SkillActivationType;
 import com.arclights.entity.operator.skill.SkillRecoveryType;
 
 public class Sniper extends Operator {
+    /** DP cost to deploy a Sniper, accessible without instantiating one. */
+    public static final int DEPLOY_COST = 12;
+
     public Sniper(double gridX, double gridY) {
-        super(gridX, gridY, 800, 70, 1, AttackType.PHYSICAL, 45, 0, 20, false);
+        super(gridX, gridY, 800, 70, 1, AttackType.PHYSICAL, 45, 0, 20, false, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
             "Precision Burst",

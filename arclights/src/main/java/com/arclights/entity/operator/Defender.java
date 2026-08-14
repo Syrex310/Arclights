@@ -6,8 +6,11 @@ import com.arclights.entity.operator.skill.SkillActivationType;
 import com.arclights.entity.operator.skill.SkillRecoveryType;
 
 public class Defender extends Operator {
+    /** DP cost to deploy a Defender, accessible without instantiating one. */
+    public static final int DEPLOY_COST = 15;
+
     public Defender(double gridX, double gridY) {
-        super(gridX, gridY, 2000, 5, 3, AttackType.PHYSICAL, 60, 50, 100, true);
+        super(gridX, gridY, 2000, 5, 3, AttackType.PHYSICAL, 60, 50, 100, true, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
             "Heavy Strike",

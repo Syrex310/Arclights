@@ -25,6 +25,16 @@ import javafx.scene.shape.Rectangle;
 public class DeploymentManager {
     public enum SelectionState { NONE, DRAGGING_SNIPER, DRAGGING_DEFENDER, SELECTING_DIRECTION }
 
+    // Deployment Points (DP): starting pool, hard cap, and passive regen rate.
+    // 1 DP is regenerated per second of game time. Since DeploymentManager.update()
+    // is called once per simulated 1/60s tick (see App's game loop), each tick
+    // regenerates 1/60 DP.
+    private static final double STARTING_DP = 20.0;
+    private static final double MAX_DP = 99.0;
+    private static final double DP_PER_TICK = 1.0 / 60.0;
+
+    private double currentDP = STARTING_DP;
+
     private final List<Operator> activeOperators = new ArrayList<>();
     private final Map<Operator, EntityAnimationController> animations = new HashMap<>();
     private final List<Rectangle> rangePreviewNodes = new ArrayList<>();
@@ -89,7 +99,28 @@ public class DeploymentManager {
 
     public SelectionState getCurrentState() { return currentState; }
 
+    public int getCurrentDP() {
+        return (int) Math.floor(currentDP);
+    }
+
+    public int getMaxDP() {
+        return (int) MAX_DP;
+    }
+
+    /** DP cost of the operator type tied to a given drag/selection state, without instantiating one. */
+    private int getCostForState(SelectionState state) {
+        if (state == SelectionState.DRAGGING_SNIPER) return Sniper.DEPLOY_COST;
+        if (state == SelectionState.DRAGGING_DEFENDER) return Defender.DEPLOY_COST;
+        return 0;
+    }
+
+    /** Whether enough DP is currently banked to deploy the operator type for this state. */
+    public boolean canAfford(SelectionState dragType) {
+        return currentDP >= getCostForState(dragType);
+    }
+
     public void startDrag(SelectionState dragType) {
+        if (!canAfford(dragType)) return;
         this.currentState = dragType;
         double minSize = Math.min(tileWidth, tileHeight);
         dragGhost.setRadius(minSize * 0.35); // Scale ghost proportionally to minimum tile dimension
@@ -230,6 +261,14 @@ public class DeploymentManager {
     public void confirmDeployment() {
         if (currentState != SelectionState.SELECTING_DIRECTION || pendingOperator == null) return;
 
+        // Guard against DP being spent elsewhere mid-drag; deployment cannot
+        // proceed without enough banked DP to cover this operator's cost.
+        if (currentDP < pendingOperator.getDeployCost()) {
+            cancelPendingDeployment();
+            return;
+        }
+        currentDP -= pendingOperator.getDeployCost();
+
         pendingTile.setOccupied(true);
         operatorTiles.put(pendingOperator, pendingTile);
 
@@ -269,6 +308,22 @@ public class DeploymentManager {
         finalDirectionArrow = null;
         clearRangePreview();
         System.out.println("Deployment bound locked successfully.");
+    }
+
+    /** Aborts a pending placement (e.g. insufficient DP) and clears its preview visuals. */
+    private void cancelPendingDeployment() {
+        if (pendingTile != null) {
+            pendingTile.setOccupied(false);
+        }
+        if (finalOpSprite != null) root.getChildren().remove(finalOpSprite);
+        if (finalDirectionArrow != null) root.getChildren().remove(finalDirectionArrow);
+
+        currentState = SelectionState.NONE;
+        pendingOperator = null;
+        pendingTile = null;
+        finalOpSprite = null;
+        finalDirectionArrow = null;
+        clearRangePreview();
     }
 
     private void showRangePreview(Operator op) {
@@ -316,6 +371,8 @@ public class DeploymentManager {
     }
 
     public void update(List<Enemy> activeEnemies) {
+        currentDP = Math.min(MAX_DP, currentDP + DP_PER_TICK);
+
         for (Operator op : activeOperators) {
             op.update(activeEnemies);
             EntityAnimationController animation = animations.get(op);

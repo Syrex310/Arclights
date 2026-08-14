@@ -20,13 +20,14 @@ public class Operator extends GameEntity {
     private int attackCooldownTimer;
     private boolean attackTriggered;
     private OperatorSkill skill;
+    private final int deployCost;
     private final List<Enemy> blockedEnemies = new ArrayList<>();
     protected List<Point2D> relativeRangeOffsets = new ArrayList<>(); // Relative (col, row) offsets
 
     // Constructor now receives true pixel positions directly from DeploymentManager
     public Operator(int gridX, int gridY, double pixelX, double pixelY, double hp, double atk, 
                     int blockCount, AttackType attackType, double attackInterval, 
-                    double resistance, double defense, boolean isGround) {
+                    double resistance, double defense, boolean isGround, int deployCost) {
         super(
             pixelX, 
             pixelY, 
@@ -37,13 +38,19 @@ public class Operator extends GameEntity {
         this.attackCooldownTimer = 0;
         this.facing = Direction.EAST; // Default facing configuration
         this.skill = null;
+        this.deployCost = deployCost;
     }
 
     // Overloaded constructor for fallback / default pixel calculation if needed
     public Operator(double gridX, double gridY, double hp, double atk, int blockCount, 
                     AttackType attackType, double attackInterval, double resistance, 
-                    double defense, boolean isGround) {
-        this((int) gridX, (int) gridY, gridX * 64 + 32, gridY * 64 + 32, hp, atk, blockCount, attackType, attackInterval, resistance, defense, isGround);
+                    double defense, boolean isGround, int deployCost) {
+        this((int) gridX, (int) gridY, gridX * 64 + 32, gridY * 64 + 32, hp, atk, blockCount, attackType, attackInterval, resistance, defense, isGround, deployCost);
+    }
+
+    /** DP cost required to deploy this operator, mirroring Arknights' deployment-point system. */
+    public int getDeployCost() {
+        return deployCost;
     }
 
     public void setFacing(Direction facing) {
