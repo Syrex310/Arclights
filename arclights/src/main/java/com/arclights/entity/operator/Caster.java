@@ -7,19 +7,20 @@ import com.arclights.entity.operator.skill.SkillRecoveryType;
 import javafx.geometry.Point2D;
 
 public class Caster extends Operator {
-    public static final int DEPLOY_COST = 5;
+    public static final int DEPLOY_COST = 21;
 
     public Caster(double gridX, double gridY) {
-        super(gridX, gridY, 2000, 5, 3, AttackType.ARTS, 60, 50, 100, false, DEPLOY_COST);
+        super(gridX, gridY, 1743, 645, 1, AttackType.ARTS, 96, 20, 122, false, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
-            "Heavy Strike",
+            "Ignition",
             SkillRecoveryType.AUTO,
-            SkillActivationType.DURATION,
-            25,
-            1.5,
+            SkillActivationType.NEXT_ATTACK,
+            5,
             1.0,
-            20.0
+            3.7,
+            0,
+            true
         ));
         
         this.relativeRangeOffsets.add(new Point2D(0, -1));

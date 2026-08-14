@@ -7,19 +7,20 @@ import com.arclights.entity.operator.skill.SkillRecoveryType;
 import javafx.geometry.Point2D;
 
 public class Vanguard extends Operator {
-    public static final int DEPLOY_COST = 5;
+    public static final int DEPLOY_COST = 10;
 
     public Vanguard(double gridX, double gridY) {
-        super(gridX, gridY, 2000, 5, 3, AttackType.PHYSICAL, 60, 50, 100, true, DEPLOY_COST);
+        super(gridX, gridY, 2226, 570, 2, AttackType.PHYSICAL, 60, 0, 360, true, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
-            "Heavy Strike",
+            "Impaler Lance",
             SkillRecoveryType.OFFENSIVE,
             SkillActivationType.NEXT_ATTACK,
-            2,
-            1.0,
+            4,
             2.0,
-            0.0
+            1.8,
+            0.0,
+            true // give dp when activated
         ));
         
         this.relativeRangeOffsets.add(new Point2D(0, 0));

@@ -8,18 +8,18 @@ import javafx.geometry.Point2D;
 
 public class Sniper extends Operator {
     /** DP cost to deploy a Sniper, accessible without instantiating one. */
-    public static final int DEPLOY_COST = 5;
+    public static final int DEPLOY_COST = 13;
 
     public Sniper(double gridX, double gridY) {
-        super(gridX, gridY, 800, 70, 1, AttackType.PHYSICAL, 45, 0, 20, false, DEPLOY_COST);
+        super(gridX, gridY, 1230, 535, 1, AttackType.PHYSICAL, 60, 0, 130, false, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
             "Precision Burst",
             SkillRecoveryType.OFFENSIVE,
             SkillActivationType.NEXT_ATTACK,
-            4,
-            1.25,
-            1.25,
+            2,
+            1.0,
+            2.0,
             0,
             true
         ));

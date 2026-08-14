@@ -7,19 +7,20 @@ import com.arclights.entity.operator.skill.SkillRecoveryType;
 import javafx.geometry.Point2D;
 
 public class Guard extends Operator {
-    public static final int DEPLOY_COST = 5;
+    public static final int DEPLOY_COST = 24;
 
     public Guard(double gridX, double gridY) {
-        super(gridX, gridY, 2000, 5, 3, AttackType.PHYSICAL, 60, 50, 100, true, DEPLOY_COST);
+        super(gridX, gridY, 2821, 765, 2, AttackType.PHYSICAL, 72, 0, 370, true, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
-            "Heavy Strike",
-            SkillRecoveryType.OFFENSIVE,
-            SkillActivationType.NEXT_ATTACK,
-            2,
+            "Chainsaw Extension Module",
+            SkillRecoveryType.AUTO,
+            SkillActivationType.DURATION,
+            30,
+            2.0, // def + 35%
             1.0,
-            2.0,
-            0.0
+            30,
+            true
         ));
         
         this.relativeRangeOffsets.add(new Point2D(0, 0));

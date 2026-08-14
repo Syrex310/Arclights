@@ -11,19 +11,19 @@ import javafx.geometry.Point2D;
 
 public class Medic extends Operator {
     /** DP cost to deploy a Defender, accessible without instantiating one. */
-    public static final int DEPLOY_COST = 5;
+    public static final int DEPLOY_COST = 18;
 
     public Medic(double gridX, double gridY) {
-        super(gridX, gridY, 2000, 300, 1, AttackType.ARTS, 60, 50, 100, false, DEPLOY_COST);
+        super(gridX, gridY, 1345, 488, 1, AttackType.ARTS, 171, 0, 122, false, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
-            "Heavy Strike",
-            SkillRecoveryType.OFFENSIVE,
-            SkillActivationType.NEXT_ATTACK,
-            3,       // 3 SP
-            1.0,
-            2.0,     // next attack deals 2x damage
-            0.0
+            "Deep Healing",
+            SkillRecoveryType.AUTO,
+            SkillActivationType.DURATION,
+            15,
+            2.0,
+            1.0,  
+            30
         ));
         
         this.relativeRangeOffsets.add(new Point2D(0, -1)); 

@@ -7,7 +7,6 @@ import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -45,24 +44,21 @@ public final class LoadingScreen {
 
         Label statusLabel = new Label("Initializing...");
         statusLabel.setStyle(
-            "-fx-text-fill: #ff9b00; " +
+            "-fx-text-fill: #ffffff; " +
             "-fx-font-family: 'Arial'; " +
             "-fx-font-weight: bold; " +
             "-fx-font-size: 13px;"
         );
 
-        ProgressBar progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(420);
-        progressBar.setStyle("-fx-accent: #ff9b00;");
-
         Label percentLabel = new Label("0%");
         percentLabel.setStyle(
             "-fx-text-fill: #cccccc; " +
             "-fx-font-size: 11px; " +
+            "-fx-font-weight: bold; " +
             "-fx-font-family: 'Arial';"
         );
 
-        VBox loadingBox = new VBox(14, title, progressBar, statusLabel, percentLabel);
+        VBox loadingBox = new VBox(14, title, statusLabel, percentLabel);
         loadingBox.setAlignment(Pos.CENTER);
         loadingBox.setPrefWidth(UILoader.WINDOW_WIDTH);
         loadingBox.setLayoutY(UILoader.WINDOW_HEIGHT / 2.0 - 90);
@@ -70,7 +66,6 @@ public final class LoadingScreen {
         root.getChildren().add(loadingBox);
 
         Task<Void> preloadTask = AssetPreloader.createPreloadTask();
-        progressBar.progressProperty().bind(preloadTask.progressProperty());
         statusLabel.textProperty().bind(preloadTask.messageProperty());
         percentLabel.textProperty().bind(Bindings.createStringBinding(
             () -> Math.round(Math.max(0, preloadTask.getProgress()) * 100) + "%",

@@ -67,12 +67,6 @@ public final class SpriteAnimation {
             String resource = dir + i + ".png";
             try (InputStream stream = SpriteAnimation.class.getResourceAsStream(resource)) {
                 if (stream != null) {
-                    // Decoding at the requested display size (instead of full
-                    // resolution) is what actually fixes the OutOfMemoryError:
-                    // a 1000x1000 PNG decoded at full size costs ~4MB per frame,
-                    // while decoding straight to e.g. 96x96 costs a fraction of
-                    // that. preserveRatio=true keeps aspect ratio, smooth=true
-                    // avoids a blocky/pixelated downscale.
                     System.out.println("[DEBUG Decode] File: " + resource + " | Size: " + requestedWidth + "x" + requestedHeight);
                     frames.add(new Image(stream, requestedWidth, requestedHeight, true, true));
                     misses = 0;

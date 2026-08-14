@@ -414,7 +414,7 @@ public class DeploymentManager {
     public double getGameSpeedMultiplier() {
         if (currentState == SelectionState.DRAGGING ||
             currentState == SelectionState.SELECTING_DIRECTION) {
-            return 0.1;
+            return 0.2;
         }
         return 1.0;
     }
