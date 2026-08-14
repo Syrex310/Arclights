@@ -9,6 +9,7 @@ import javafx.geometry.Point2D;
 
 public class Enemy extends GameEntity {
     private double speed;
+    private double speedDefault;
     private List<Point2D> waypoints;
     private int currentWaypointIndex;
     private boolean isBlocked = false;
@@ -39,6 +40,7 @@ public class Enemy extends GameEntity {
         this.speed = speed;
         this.waypoints = waypoints;
         this.currentWaypointIndex = 0;
+        speedDefault = speed;
     }
 
     public Enemy(double startX, double startY, double hp, double atk, int blockCount, 
@@ -48,6 +50,7 @@ public class Enemy extends GameEntity {
         this.speed = speed;
         this.waypoints = waypoints;
         this.currentWaypointIndex = 0;
+        speedDefault = speed;
     }
 
     @Override
@@ -132,6 +135,7 @@ public class Enemy extends GameEntity {
 
     public double getSpeed() { return speed; }
     public void setSpeed(double speed) { this.speed = speed; }
+    public double getDefaultSpeed() { return speedDefault; }
 
     public List<Point2D> getWaypoints() { return waypoints; }
     public void setWaypoints(List<Point2D> waypoints) { this.waypoints = waypoints; }

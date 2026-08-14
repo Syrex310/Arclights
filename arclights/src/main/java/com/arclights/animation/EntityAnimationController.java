@@ -71,7 +71,9 @@ public final class EntityAnimationController {
             else {
                 if (enemy) {
                     Enemy e = (Enemy) entity;
-                    sprite.play(e.isBlocked() ? AnimationState.IDLE : AnimationState.WALK);
+                    boolean blockingState = e.isBlocked();
+                    sprite.play(blockingState ? AnimationState.IDLE : AnimationState.WALK);
+                    e.setSpeed(blockingState ? 0 : e.getDefaultSpeed());
                     sprite.setFacingWest(false);
                 } else {
                     Operator op = (Operator) entity;

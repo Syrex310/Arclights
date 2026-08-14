@@ -30,6 +30,7 @@ public class DeploymentManager {
     private final List<Rectangle> rangePreviewNodes = new ArrayList<>();
     private final Pane root;
     private final OperatorSkillPanel skillPanel;
+    private final Map<Operator, Tile> operatorTiles = new HashMap<>();
 
     // Dynamic map alignment layout metrics
     private double tileWidth;
@@ -230,6 +231,7 @@ public class DeploymentManager {
         if (currentState != SelectionState.SELECTING_DIRECTION || pendingOperator == null) return;
 
         pendingTile.setOccupied(true);
+        operatorTiles.put(pendingOperator, pendingTile);
 
         if (finalOpSprite != null) root.getChildren().remove(finalOpSprite);
         if (finalDirectionArrow != null) root.getChildren().remove(finalDirectionArrow);
@@ -336,6 +338,11 @@ public class DeploymentManager {
 
                 if (animation != null) {
                     root.getChildren().remove(animation.getSprite().getNode());
+                }
+
+                Tile tile = operatorTiles.remove(op);
+                if (tile != null) {
+                    tile.setOccupied(false);
                 }
 
                 animations.remove(op);
