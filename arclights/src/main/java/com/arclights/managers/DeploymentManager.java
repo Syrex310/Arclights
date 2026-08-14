@@ -375,7 +375,7 @@ public class DeploymentManager {
         currentDP = Math.min(MAX_DP, currentDP + DP_PER_TICK);
 
         for (Operator op : activeOperators) {
-            op.update(activeEnemies);
+            op.update(activeEnemies, activeOperators);
             EntityAnimationController animation = animations.get(op);
             if (animation != null) {
                 if (op.consumeAttackTriggered()) animation.triggerAttack();

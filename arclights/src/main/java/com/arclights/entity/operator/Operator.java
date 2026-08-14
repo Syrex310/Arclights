@@ -107,6 +107,14 @@ public class Operator extends GameEntity {
     }
 
     public void update(List<Enemy> activeEnemies) {
+        update(activeEnemies, java.util.Collections.emptyList());
+    }
+
+    /**
+     * @param activeEnemies enemies currently on the field (attack targets)
+     * @param allies        this operator's own side currently deployed (heal/support targets)
+     */
+    public void update(List<Enemy> activeEnemies, List<Operator> allies) {
         if (skill != null) {
             skill.update();
         }
@@ -145,29 +153,49 @@ public class Operator extends GameEntity {
         if (attackCooldownTimer > 0) {
             attackCooldownTimer--;
         } else {
-            Enemy target = null;
-            if (!blockedEnemies.isEmpty()) {
-                target = blockedEnemies.get(0);
-            } else {
-                target = findTargetInGridRange(activeEnemies);
-            }
-
-            if (target != null) {
-                double damage = getAtk();
-                if (skill != null) {
-                    damage = skill.modifyAttackDamage(damage);
-                }
-
-                target.takeDamage(damage, getAttackType());
-                if (skill != null) {
-                    skill.onAttack();
-                }
-
-                attackTriggered = true;
-                System.out.println("Operator attacked enemy! Damage: " + damage + " | Enemy HP: " + target.getHp()); 
-                attackCooldownTimer = (int) getAttackInterval(); 
-            }
+            performAction(activeEnemies, allies);
         }
+    }
+
+    /**
+     * Executes this operator's per-cooldown action. Default behaviour finds
+     * an enemy in range (preferring whichever enemy it's currently blocking)
+     * and damages it. Support-type operators (e.g. {@link Medic}) override
+     * this to act on {@code allies} instead.
+     */
+    protected void performAction(List<Enemy> activeEnemies, List<Operator> allies) {
+        Enemy target = null;
+        if (!blockedEnemies.isEmpty()) {
+            target = blockedEnemies.get(0);
+        } else {
+            target = findTargetInGridRange(activeEnemies);
+        }
+
+        if (target != null) {
+            double damage = getAtk();
+            if (skill != null) {
+                damage = skill.modifyAttackDamage(damage);
+            }
+
+            target.takeDamage(damage, getAttackType());
+            if (skill != null) {
+                skill.onAttack();
+            }
+
+            markAttackTriggered();
+            System.out.println("Operator attacked enemy! Damage: " + damage + " | Enemy HP: " + target.getHp()); 
+            resetAttackCooldown();
+        }
+    }
+
+    /** Signals to the animation controller that an attack/action animation should play. */
+    protected void markAttackTriggered() {
+        attackTriggered = true;
+    }
+
+    /** Resets the per-action cooldown back to this operator's full attack interval. */
+    protected void resetAttackCooldown() {
+        attackCooldownTimer = (int) getAttackInterval();
     }
 
 
@@ -205,6 +233,37 @@ public class Operator extends GameEntity {
             }
         }
         return null;
+    }
+
+    /**
+     * Finds the most-injured ally (lowest HP%) standing on one of this
+     * operator's range tiles. Used by support-type operators (e.g.
+     * {@link Medic}) that act on their own side instead of the enemy's.
+     * Allies at full HP are never picked, so a healer with nothing to heal
+     * simply does nothing that tick.
+     */
+    protected Operator findHealTargetInGridRange(List<Operator> allies) {
+        List<Point2D> targetTiles = getAbsoluteRangeTiles();
+
+        Operator best = null;
+        double lowestHpRatio = Double.MAX_VALUE;
+
+        for (Operator ally : allies) {
+            if (ally == null || !ally.isAlive() || ally.getHp() >= ally.getMaxHp()) continue;
+
+            for (Point2D tile : targetTiles) {
+                if ((int) tile.getX() == ally.getGridX() && (int) tile.getY() == ally.getGridY()) {
+                    double hpRatio = ally.getHp() / ally.getMaxHp();
+                    if (hpRatio < lowestHpRatio) {
+                        lowestHpRatio = hpRatio;
+                        best = ally;
+                    }
+                    break;
+                }
+            }
+        }
+
+        return best;
     }
 
     @Override
