@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.arclights.animation.EntityAnimationController;
 import com.arclights.animation.SpriteSizing;
+import com.arclights.audio.SoundManager;
 import com.arclights.entity.enemy.Enemy;
 import com.arclights.entity.operator.Operator;
 import com.arclights.models.GameMap;
@@ -46,6 +47,11 @@ public class DeploymentManager {
     private final Map<Operator, Tile> operatorTiles = new HashMap<>();
     private final Map<Operator, OperatorCatalog.Definition> operatorDefs = new HashMap<>();
     private OperatorCatalog.Definition pendingOperatorDef;
+
+    private final java.util.Set<Operator> deathSoundPlayed =
+        java.util.Collections.newSetFromMap(
+            new java.util.IdentityHashMap<>()
+        );
 
     // Dynamic map alignment layout metrics
     private double tileWidth;
@@ -289,6 +295,8 @@ public class DeploymentManager {
 
         activeOperators.add(pendingOperator);
         operatorDefs.put(pendingOperator, pendingOperatorDef);
+        
+        SoundManager.playDeploySound();
 
         // Create the real animated sprite only after deployment is confirmed.
         double spriteSize = SpriteSizing.operatorSize(tileWidth, tileHeight);
@@ -336,16 +344,23 @@ public class DeploymentManager {
      * since its target no longer exists.
      */
     private void retreatOperator(Operator operator) {
-        if (operator == null || !activeOperators.contains(operator)) return;
+
+        if (operator == null || !activeOperators.contains(operator)) {
+            return;
+        }
+
+        SoundManager.playRetreatSound();
 
         operator.retreat();
 
         EntityAnimationController animation = animations.remove(operator);
+
         if (animation != null) {
             entityLayer.untrack(animation.getSprite().getNode());
         }
 
         Tile tile = operatorTiles.remove(operator);
+
         if (tile != null) {
             tile.setOccupied(false);
         }
@@ -423,10 +438,27 @@ public class DeploymentManager {
         currentDP = Math.min(MAX_DP, currentDP + DP_PER_TICK);
 
         for (Operator op : activeOperators) {
+
+            boolean wasAlive = op.isAlive();
+
             op.update(activeEnemies, activeOperators);
+
+            // Detect the exact moment the operator dies.
+            if (wasAlive
+                    && !op.isAlive()
+                    && deathSoundPlayed.add(op)) {
+
+                SoundManager.playOperatorDeathSound();
+            }
+
             EntityAnimationController animation = animations.get(op);
+
             if (animation != null) {
-                if (op.consumeAttackTriggered()) animation.triggerAttack();
+
+                if (op.consumeAttackTriggered()) {
+                    animation.triggerAttack();
+                }
+
                 animation.update();
             }
         }

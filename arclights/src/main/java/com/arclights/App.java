@@ -1,5 +1,6 @@
 package com.arclights;
 
+import com.arclights.audio.SoundManager;
 import com.arclights.handlers.InputController;
 import com.arclights.managers.DeploymentManager;
 import com.arclights.managers.EnemyManager;
@@ -54,7 +55,9 @@ public class App extends Application {
     }
 
     private void showStartMenu(Stage stage) {
-        stage.setScene(StartMenu.createScene(new StartMenu.MenuCallbacks() {
+
+        Scene scene = StartMenu.createScene(new StartMenu.MenuCallbacks() {
+
             @Override
             public void onTerminalClick() {
                 showStageSelect(stage);
@@ -72,37 +75,81 @@ public class App extends Application {
 
             @Override
             public void onExitClick() {
+                SoundManager.shutdown();
+
                 stage.close();
                 System.exit(0);
             }
-        }));
+        });
+
+        SoundManager.playMenuMusic();
+        SoundManager.installMenuClickSound(scene);
+
+        stage.setScene(scene);
         stage.setTitle("Arclights - Main Terminal");
         stage.show();
     }
 
     private void showStageSelect(Stage stage) {
-        stage.setScene(StagePreview.createScene(new StagePreview.StageSelectCallbacks() {
-            @Override
-            public void onBackToMenu() {
-                showStartMenu(stage);
-            }
 
-            @Override
-            public void onDeployStage(char[][] layout, String name) {
-                startGame(stage, layout, name);
+        Scene scene = StagePreview.createScene(
+            new StagePreview.StageSelectCallbacks() {
+
+                @Override
+                public void onBackToMenu() {
+                    showStartMenu(stage);
+                }
+
+                @Override
+                public void onDeployStage(
+                        char[][] layout,
+                        String name) {
+
+                    startGame(stage, layout, name);
+                }
             }
-        }));
+        );
+
+        SoundManager.playMenuMusic();
+        SoundManager.installMenuClickSound(scene);
+
+        stage.setScene(scene);
+        stage.setTitle("Arclights - Stage Select");
+        stage.show();
     }
 
     private void showOperatorScreen(Stage stage) {
-        stage.setScene(OperatorListView.createScene(() -> showStartMenu(stage)));
+
+        Scene scene = OperatorListView.createScene(
+            () -> showStartMenu(stage)
+        );
+
+        SoundManager.playMenuMusic();
+        SoundManager.installMenuClickSound(scene);
+
+        stage.setScene(scene);
+        stage.setTitle("Arclights - Operator Archives");
+        stage.show();
     }
 
     private void showShopScreen(Stage stage) {
-        stage.setScene(ShopMenu.createScene(() -> showStartMenu(stage), () -> showOperatorScreen(stage)));
+
+        Scene scene = ShopMenu.createScene(
+            () -> showStartMenu(stage),
+            () -> showOperatorScreen(stage)
+        );
+
+        SoundManager.playMenuMusic();
+        SoundManager.installMenuClickSound(scene);
+
+        stage.setScene(scene);
+        stage.setTitle("Arclights - Shop");
+        stage.show();
     }
 
     private void startGame(Stage stage, char[][] levelLayout, String levelName) {
+        SoundManager.playBattleMusic();
+
         Pane root = new Pane();
         root.setStyle("-fx-background-color: #121212;");
 
@@ -122,16 +169,25 @@ public class App extends Application {
 
         EnemyManager enemyManager = new EnemyManager(entityLayer, gameMap, layout);
         enemyManager.setOnGameOver(() -> {
+
             if (gameLoop != null) {
                 gameLoop.stop();
             }
+            SoundManager.stopMusic();
+            SoundManager.playDefeatSound();
+
             showDefeatOverlay(stage, root);
         });
         enemyManager.setOnStageClear(() -> {
+
             if (gameLoop != null) {
                 gameLoop.stop();
             }
+            SoundManager.stopMusic();
+            SoundManager.playStageClearSound();
+
             int reward = grantStageClearReward(levelLayout, levelName);
+
             showVictoryOverlay(stage, root, reward);
         });
 

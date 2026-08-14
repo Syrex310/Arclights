@@ -1,5 +1,6 @@
 package com.arclights.ui;
 
+import com.arclights.audio.SoundManager;
 import com.arclights.entity.operator.Operator;
 import com.arclights.entity.operator.skill.OperatorSkill;
 import com.arclights.models.OperatorCatalog;
@@ -133,10 +134,18 @@ public class OperatorSelectionOverlay {
 
         skillSquare.getChildren().addAll(skillFill, skillSpLabel);
         skillSquare.setOnMouseClicked(event -> {
+
             if (selectedOperator != null) {
+
                 selectedOperator.activateSkill();
+
+                if (selectedOperator.activateSkill()) {
+                    SoundManager.playSkillSound();
+                }
+
                 refresh();
             }
+
             event.consume();
         });
         skillSquare.setOnMouseEntered(e -> skillSquare.setOpacity(0.85));
