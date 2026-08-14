@@ -18,9 +18,12 @@ public class Defender extends Operator {
             SkillRecoveryType.AUTO,
             SkillActivationType.DURATION,
             35,
-            1.0,
-            1.0,
-            35 // def + 80%
+            0,
+            0.8,
+            0,
+            35,
+            null,
+            false
         ));
         
         this.relativeRangeOffsets.add(new Point2D(0, 0));

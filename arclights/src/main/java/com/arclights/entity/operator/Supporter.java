@@ -17,9 +17,11 @@ public class Supporter extends Operator {
             SkillRecoveryType.AUTO,
             SkillActivationType.DURATION,
             60,
-            1.0,
-            1.0,
+            0,
+            0,
+            0,
             1e9,
+            null,
             true
         ));
         

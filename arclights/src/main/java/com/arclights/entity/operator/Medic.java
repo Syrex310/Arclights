@@ -21,9 +21,12 @@ public class Medic extends Operator {
             SkillRecoveryType.AUTO,
             SkillActivationType.DURATION,
             15,
-            2.0,
-            1.0,  
-            30
+            1,
+            0,
+            0,  
+            30,
+            null,
+            false
         ));
         
         this.relativeRangeOffsets.add(new Point2D(0, -1)); 

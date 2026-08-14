@@ -17,9 +17,11 @@ public class Guard extends Operator {
             SkillRecoveryType.AUTO,
             SkillActivationType.DURATION,
             30,
-            2.0, // def + 35%
-            1.0,
+            1,
+            0.35,
+            0,
             30,
+            null,
             true
         ));
         

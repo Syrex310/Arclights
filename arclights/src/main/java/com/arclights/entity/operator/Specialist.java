@@ -10,16 +10,18 @@ public class Specialist extends Operator {
     public static final int DEPLOY_COST = 5;
 
     public Specialist(double gridX, double gridY) {
-        super(gridX, gridY, 1505, 530, 1, AttackType.PHYSICAL, 55.8, 0, 302, true, DEPLOY_COST);
+        super(gridX, gridY, 1201, 530, 1, AttackType.PHYSICAL, 55.8, 0, 0, true, DEPLOY_COST);
 
         setSkill(new OperatorSkill(
             "Execution Mode",
             SkillRecoveryType.OFFENSIVE,
-            SkillActivationType.NEXT_ATTACK,
+            SkillActivationType.DURATION,
+            1,
+            1,
             0,
-            2.0,
-            2.0,
+            1,
             20.0,
+            null,
             true
         ));
         

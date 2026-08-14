@@ -18,9 +18,11 @@ public class Sniper extends Operator {
             SkillRecoveryType.OFFENSIVE,
             SkillActivationType.NEXT_ATTACK,
             2,
-            1.0,
-            2.0,
+            0.35,
             0,
+            1,
+            0,
+            null,
             true
         ));
         

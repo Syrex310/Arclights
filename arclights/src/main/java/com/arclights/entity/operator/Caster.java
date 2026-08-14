@@ -17,9 +17,11 @@ public class Caster extends Operator {
             SkillRecoveryType.AUTO,
             SkillActivationType.NEXT_ATTACK,
             5,
-            1.0,
-            3.7,
-            0,
+            0.0,  
+            0.0,  
+            2.7,  
+            0.0,
+            null,
             true
         ));
         

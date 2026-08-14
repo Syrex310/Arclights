@@ -10,48 +10,119 @@ import com.arclights.entity.operator.skill.OperatorSkill;
 import javafx.geometry.Point2D;
 
 public class Operator extends GameEntity {
+
     public enum Direction {
         NORTH, EAST, SOUTH, WEST
     }
 
     private final int gridX;
     private final int gridY;
+
     private Direction facing;
+
     private int attackCooldownTimer;
     private boolean attackTriggered;
-    private OperatorSkill skill;
-    private final int deployCost;
-    private final List<Enemy> blockedEnemies = new ArrayList<>();
-    protected List<Point2D> relativeRangeOffsets = new ArrayList<>(); // Relative (col, row) offsets
 
-    // Constructor now receives true pixel positions directly from DeploymentManager
-    public Operator(int gridX, int gridY, double pixelX, double pixelY, double hp, double atk, 
-                    int blockCount, AttackType attackType, double attackInterval, 
-                    double resistance, double defense, boolean isGround, int deployCost) {
+    private OperatorSkill skill;
+
+    private final int deployCost;
+
+    private final List<Enemy> blockedEnemies = new ArrayList<>();
+
+    protected List<Point2D> relativeRangeOffsets = new ArrayList<>();
+
+    // =========================================================
+    // Constructor
+    // =========================================================
+
+    // Constructor receives true pixel positions directly from DeploymentManager
+    public Operator(
+            int gridX,
+            int gridY,
+            double pixelX,
+            double pixelY,
+            double hp,
+            double atk,
+            int blockCount,
+            AttackType attackType,
+            double attackInterval,
+            double resistance,
+            double defense,
+            boolean isGround,
+            int deployCost) {
+
         super(
-            pixelX, 
-            pixelY, 
-            hp, atk, blockCount, attackType, attackInterval, resistance, defense, true, isGround
+            pixelX,
+            pixelY,
+            hp,
+            atk,
+            blockCount,
+            attackType,
+            attackInterval,
+            resistance,
+            defense,
+            true,
+            isGround
         );
+
         this.gridX = gridX;
         this.gridY = gridY;
+
         this.attackCooldownTimer = 0;
-        this.facing = Direction.EAST; // Default facing configuration
+
+        this.facing = Direction.EAST;
+
         this.skill = null;
+
         this.deployCost = deployCost;
     }
 
-    // Overloaded constructor for fallback / default pixel calculation if needed
-    public Operator(double gridX, double gridY, double hp, double atk, int blockCount, 
-                    AttackType attackType, double attackInterval, double resistance, 
-                    double defense, boolean isGround, int deployCost) {
-        this((int) gridX, (int) gridY, gridX * 64 + 32, gridY * 64 + 32, hp, atk, blockCount, attackType, attackInterval, resistance, defense, isGround, deployCost);
+    // Overloaded constructor for fallback / default pixel calculation
+    public Operator(
+            double gridX,
+            double gridY,
+            double hp,
+            double atk,
+            int blockCount,
+            AttackType attackType,
+            double attackInterval,
+            double resistance,
+            double defense,
+            boolean isGround,
+            int deployCost) {
+
+        this(
+            (int) gridX,
+            (int) gridY,
+            gridX * 64 + 32,
+            gridY * 64 + 32,
+            hp,
+            atk,
+            blockCount,
+            attackType,
+            attackInterval,
+            resistance,
+            defense,
+            isGround,
+            deployCost
+        );
     }
 
-    /** DP cost required to deploy this operator, mirroring Arknights' deployment-point system. */
+    // =========================================================
+    // Deployment
+    // =========================================================
+
+    /**
+     * DP cost required to deploy this operator,
+     * mirroring Arknights' deployment-point system.
+     */
     public int getDeployCost() {
         return deployCost;
     }
+
+    // =========================================================
+    // Direction
+    // =========================================================
 
     public void setFacing(Direction facing) {
         this.facing = facing;
@@ -61,31 +132,52 @@ public class Operator extends GameEntity {
         return facing;
     }
 
-    public int getGridX() { return gridX; }
-    public int getGridY() { return gridY; }
+    // =========================================================
+    // Grid
+    // =========================================================
+
+    public int getGridX() {
+        return gridX;
+    }
+
+    public int getGridY() {
+        return gridY;
+    }
+
+    // =========================================================
+    // Range
+    // =========================================================
 
     public List<Point2D> getAbsoluteRangeTiles() {
+
         List<Point2D> absoluteTiles = new ArrayList<>();
+
         for (Point2D offset : relativeRangeOffsets) {
+
             double dx = offset.getX();
             double dy = offset.getY();
+
             double rotatedX = dx;
             double rotatedY = dy;
 
             // Correct 2D rotation matrix relative to EAST (0 degrees)
             switch (facing) {
+
                 case NORTH:
                     rotatedX = dy;
                     rotatedY = -dx;
                     break;
+
                 case SOUTH:
                     rotatedX = -dy;
                     rotatedY = dx;
                     break;
+
                 case WEST:
                     rotatedX = -dx;
                     rotatedY = -dy;
                     break;
+
                 case EAST:
                 default:
                     rotatedX = dx;
@@ -93,112 +185,375 @@ public class Operator extends GameEntity {
                     break;
             }
 
-            absoluteTiles.add(new Point2D(gridX + rotatedX, gridY + rotatedY));
+            absoluteTiles.add(
+                new Point2D(
+                    gridX + rotatedX,
+                    gridY + rotatedY
+                )
+            );
         }
+
         return absoluteTiles;
     }
 
+    // =========================================================
+    // Blocking
+    // =========================================================
+
     public int getRemainingBlockCount() {
+
         int usedBlock = 0;
+
         for (Enemy enemy : blockedEnemies) {
             usedBlock += enemy.getBlockCount();
         }
-        return Math.max(0, getBlockCount() - usedBlock);
+
+        return Math.max(
+            0,
+            getBlockCount() - usedBlock
+        );
     }
+
+    // =========================================================
+    // Update
+    // =========================================================
 
     public void update(List<Enemy> activeEnemies) {
         update(activeEnemies, java.util.Collections.emptyList());
     }
 
     /**
-     * @param activeEnemies enemies currently on the field (attack targets)
-     * @param allies        this operator's own side currently deployed (heal/support targets)
+     * @param activeEnemies enemies currently on the field
+     * @param allies this operator's own side currently deployed
      */
-    public void update(List<Enemy> activeEnemies, List<Operator> allies) {
+    public void update(
+            List<Enemy> activeEnemies,
+            List<Operator> allies) {
+
+        // Update skill first
         if (skill != null) {
             skill.update();
         }
 
+        // =====================================================
+        // Death cleanup
+        // =====================================================
+
         if (!isAlive()) {
+
             for (Enemy enemy : blockedEnemies) {
                 enemy.setBlocked(false);
                 enemy.setBlockedBy(null);
             }
+
             blockedEnemies.clear();
+
             return;
         }
 
-        blockedEnemies.removeIf(enemy -> !enemy.isAlive());
+        // Remove dead enemies from blocking list
+        blockedEnemies.removeIf(
+            enemy -> !enemy.isAlive()
+        );
 
-        // Melee unit blocking logic based on entity center distance
+        // =====================================================
+        // Blocking
+        // =====================================================
+
         if (isGround()) {
-            for (Enemy enemy : activeEnemies) {
-                if (!enemy.isAlive() || enemy.isBlocked()) continue;
 
-                // Check if enemy is on the same tile as the Defender
-                boolean isSameTile = (enemy.getCurrentGridX() == this.gridX) 
-                                && (enemy.getCurrentGridY() == this.gridY);
+            for (Enemy enemy : activeEnemies) {
+
+                if (!enemy.isAlive() || enemy.isBlocked()) {
+                    continue;
+                }
+
+                // Check if enemy is on the same tile
+                boolean isSameTile =
+                    enemy.getCurrentGridX() == this.gridX
+                    &&
+                    enemy.getCurrentGridY() == this.gridY;
 
                 if (isSameTile) {
-                    if (getRemainingBlockCount() >= enemy.getBlockCount()) {
+
+                    if (getRemainingBlockCount()
+                            >= enemy.getBlockCount()) {
+
                         blockedEnemies.add(enemy);
+
                         enemy.setBlocked(true);
                         enemy.setBlockedBy(this);
-                        System.out.println("Enemy blocked at grid (" + gridX + ", " + gridY + ")! Remaining Block: " + getRemainingBlockCount());
+
+                        System.out.println(
+                            "Enemy blocked at grid ("
+                            + gridX
+                            + ", "
+                            + gridY
+                            + ")! Remaining Block: "
+                            + getRemainingBlockCount()
+                        );
                     }
                 }
             }
-        }  
+        }
+
+        // =====================================================
+        // Attack cooldown
+        // =====================================================
 
         if (attackCooldownTimer > 0) {
+
             attackCooldownTimer--;
+
         } else {
+
             performAction(activeEnemies, allies);
         }
     }
 
+    // =========================================================
+    // Combat
+    // =========================================================
+
     /**
-     * Executes this operator's per-cooldown action. Default behaviour finds
-     * an enemy in range (preferring whichever enemy it's currently blocking)
-     * and damages it. Support-type operators (e.g. {@link Medic}) override
-     * this to act on {@code allies} instead.
+     * Executes this operator's per-cooldown action.
+     *
+     * Default behaviour:
+     *
+     * 1. Attack an enemy currently being blocked.
+     * 2. Otherwise find an enemy inside attack range.
      */
-    protected void performAction(List<Enemy> activeEnemies, List<Operator> allies) {
+    protected void performAction(
+            List<Enemy> activeEnemies,
+            List<Operator> allies) {
+
         Enemy target = null;
+
+        // Prefer blocked enemy
         if (!blockedEnemies.isEmpty()) {
+
             target = blockedEnemies.get(0);
+
         } else {
+
             target = findTargetInGridRange(activeEnemies);
         }
 
         if (target != null) {
-            double damage = getAtk();
+
+            // =================================================
+            // Effective ATK
+            // =================================================
+            //
+            // Base ATK:
+            //
+            //     getAtk()
+            //
+            // Skill ATK bonus:
+            //
+            //     skill.modifyAttack(...)
+            //
+            // Example:
+            //
+            //     Base ATK = 100
+            //     Skill = +50%
+            //     Effective ATK = 150
+            //
+            double attack = getEffectiveAtk();
+
+            // Damage starts from effective ATK
+            double damage = attack;
+
+            // =================================================
+            // Custom damage effects
+            // =================================================
+            //
+            // This is intentionally kept separate from ATK.
+            //
+            // For example:
+            //
+            //     +20% damage against boss
+            //     true damage
+            //     elemental damage
+            //     execute effects
+            //
             if (skill != null) {
                 damage = skill.modifyAttackDamage(damage);
             }
 
-            target.takeDamage(damage, getAttackType());
+            // =================================================
+            // Deal damage
+            // =================================================
+
+            target.takeDamage(
+                damage,
+                getAttackType()
+            );
+
+            // =================================================
+            // Skill attack handling
+            // =================================================
+
             if (skill != null) {
+
+                // Offensive SP recovery
                 skill.onAttack();
+
+                // Consume NEXT_ATTACK skill if necessary
+                skill.consumeAttack();
             }
 
+            // =================================================
+            // Animation
+            // =================================================
+
             markAttackTriggered();
-            System.out.println("Operator attacked enemy! Damage: " + damage + " | Enemy HP: " + target.getHp()); 
+
+            System.out.println(
+                "Operator attacked enemy!"
+                + " | ATK: " + attack
+                + " | Damage: " + damage
+                + " | Enemy HP: " + target.getHp()
+            );
+
             resetAttackCooldown();
         }
     }
 
-    /** Signals to the animation controller that an attack/action animation should play. */
+    /**
+     * Returns the operator's current effective ATK.
+     *
+     * Base ATK is stored in GameEntity.
+     *
+     * Skills can modify the effective ATK without
+     * changing the operator's permanent base ATK.
+     */
+    public double getEffectiveAtk() {
+
+        double atk = getAtk();
+
+        if (skill != null) {
+            atk = skill.modifyAttack(atk);
+        }
+
+        return atk;
+    }
+
+    /**
+     * Returns the operator's current effective DEF.
+     *
+     * Base DEF is stored in GameEntity.
+     *
+     * Skills can temporarily increase/decrease this value
+     * without changing the operator's permanent base DEF.
+     */
+    public double getEffectiveDefense() {
+
+        double defense = getDefense();
+
+        if (skill != null) {
+            defense = skill.modifyDefense(defense);
+        }
+
+        return defense;
+    }
+
+    /**
+     * Operator-specific damage handling.
+     *
+     * GameEntity normally uses getDefense() directly.
+     *
+     * We override it here so active skill DEF bonuses
+     * actually affect incoming physical damage.
+     */
+    @Override
+    public void takeDamage(
+            double damage,
+            AttackType attackType) {
+
+        if (!isAlive()) {
+            return;
+        }
+
+        double mitigation;
+
+        // =====================================================
+        // Physical damage
+        // =====================================================
+
+        if (attackType == AttackType.PHYSICAL) {
+
+            // IMPORTANT:
+            // Use effective DEF instead of base DEF.
+            mitigation = getEffectiveDefense();
+
+            double remainingHp =
+                getHp()
+                - Math.max(damage - mitigation, 0);
+
+            remainingHp = Math.max(
+                remainingHp,
+                0
+            );
+
+            setHp(remainingHp);
+
+            if (remainingHp <= 0) {
+                setIsAlive(false);
+            }
+
+            return;
+        }
+
+        // =====================================================
+        // Arts damage
+        // =====================================================
+
+        if (attackType == AttackType.ARTS) {
+
+            mitigation = getResistance();
+
+            double remainingHp =
+                getHp()
+                - damage * (1 - mitigation);
+
+            remainingHp = Math.max(
+                remainingHp,
+                0
+            );
+
+            setHp(remainingHp);
+
+            if (remainingHp <= 0) {
+                setIsAlive(false);
+            }
+        }
+    }
+
+    // =========================================================
+    // Attack animation
+    // =========================================================
+
+    /**
+     * Signals to the animation controller that an
+     * attack/action animation should play.
+     */
     protected void markAttackTriggered() {
         attackTriggered = true;
     }
 
-    /** Resets the per-action cooldown back to this operator's full attack interval. */
+    /**
+     * Resets the per-action cooldown back to the
+     * operator's full attack interval.
+     */
     protected void resetAttackCooldown() {
-        attackCooldownTimer = (int) getAttackInterval();
+        attackCooldownTimer =
+            (int) getAttackInterval();
     }
 
-
+    // =========================================================
+    // Skill
+    // =========================================================
 
     public void setSkill(OperatorSkill skill) {
         this.skill = skill;
@@ -208,73 +563,142 @@ public class Operator extends GameEntity {
         return skill;
     }
 
-    /** Activates the operator's skill if enough SP has been collected. */
+    /**
+     * Activates the operator's skill if enough SP
+     * has been collected.
+     */
     public boolean activateSkill() {
-        return skill != null && skill.activate();
+
+        return skill != null
+            && skill.activate();
     }
 
+    // =========================================================
+    // Retreat
+    // =========================================================
+
     /**
-     * Pulls this operator off the field immediately (player-initiated
-     * retreat, as opposed to dying in combat). Releases whichever enemies
-     * it was currently blocking - mirroring the cleanup {@link #update}
-     * already does once an operator's HP hits zero - and marks it no
-     * longer alive so callers (DeploymentManager) can tear down its tile
-     * occupancy and sprite the same way a death is handled.
+     * Pulls this operator off the field immediately.
+     *
+     * Releases enemies currently being blocked and
+     * marks the operator as dead so DeploymentManager
+     * can clean up its tile/sprite.
      */
     public void retreat() {
+
         for (Enemy enemy : blockedEnemies) {
+
             enemy.setBlocked(false);
             enemy.setBlockedBy(null);
         }
+
         blockedEnemies.clear();
+
         setIsAlive(false);
     }
 
-    /** Returns true once when this operator performs an attack. */
+    // =========================================================
+    // Attack animation trigger
+    // =========================================================
+
+    /**
+     * Returns true once when this operator performs an attack.
+     */
     public boolean consumeAttackTriggered() {
+
         boolean triggered = attackTriggered;
+
         attackTriggered = false;
+
         return triggered;
     }
 
-    private Enemy findTargetInGridRange(List<Enemy> activeEnemies) {
-        List<Point2D> targetTiles = getAbsoluteRangeTiles();
+    // =========================================================
+    // Target finding
+    // =========================================================
+
+    private Enemy findTargetInGridRange(
+            List<Enemy> activeEnemies) {
+
+        List<Point2D> targetTiles =
+            getAbsoluteRangeTiles();
 
         for (Enemy enemy : activeEnemies) {
-            if (!enemy.isAlive()) continue;
+
+            if (!enemy.isAlive()) {
+                continue;
+            }
 
             for (Point2D tile : targetTiles) {
-                if ((int) tile.getX() == enemy.getCurrentGridX() && (int) tile.getY() == enemy.getCurrentGridY()) {
+
+                if (
+                    (int) tile.getX()
+                        == enemy.getCurrentGridX()
+                    &&
+                    (int) tile.getY()
+                        == enemy.getCurrentGridY()
+                ) {
+
                     return enemy;
                 }
             }
         }
+
         return null;
     }
 
+    // =========================================================
+    // Healing
+    // =========================================================
+
     /**
-     * Finds the most-injured ally (lowest HP%) standing on one of this
-     * operator's range tiles. Used by support-type operators (e.g.
-     * {@link Medic}) that act on their own side instead of the enemy's.
-     * Allies at full HP are never picked, so a healer with nothing to heal
-     * simply does nothing that tick.
+     * Finds the most-injured ally (lowest HP%)
+     * standing on one of this operator's range tiles.
+     *
+     * Allies at full HP are never picked.
      */
-    protected Operator findHealTargetInGridRange(List<Operator> allies) {
-        List<Point2D> targetTiles = getAbsoluteRangeTiles();
+    protected Operator findHealTargetInGridRange(
+            List<Operator> allies) {
+
+        List<Point2D> targetTiles =
+            getAbsoluteRangeTiles();
 
         Operator best = null;
-        double lowestHpRatio = Double.MAX_VALUE;
+
+        double lowestHpRatio =
+            Double.MAX_VALUE;
 
         for (Operator ally : allies) {
-            if (ally == null || !ally.isAlive() || ally.getHp() >= ally.getMaxHp()) continue;
+
+            if (
+                ally == null
+                || !ally.isAlive()
+                || ally.getHp() >= ally.getMaxHp()
+            ) {
+                continue;
+            }
 
             for (Point2D tile : targetTiles) {
-                if ((int) tile.getX() == ally.getGridX() && (int) tile.getY() == ally.getGridY()) {
-                    double hpRatio = ally.getHp() / ally.getMaxHp();
+
+                if (
+                    (int) tile.getX()
+                        == ally.getGridX()
+                    &&
+                    (int) tile.getY()
+                        == ally.getGridY()
+                ) {
+
+                    double hpRatio =
+                        ally.getHp()
+                        / ally.getMaxHp();
+
                     if (hpRatio < lowestHpRatio) {
+
                         lowestHpRatio = hpRatio;
+
                         best = ally;
                     }
+
                     break;
                 }
             }
@@ -283,6 +707,12 @@ public class Operator extends GameEntity {
         return best;
     }
 
+    // =========================================================
+    // GameEntity abstract update
+    // =========================================================
+
     @Override
-    public void update() {}
+    public void update() {
+        // Operator uses update(activeEnemies, allies)
+    }
 }

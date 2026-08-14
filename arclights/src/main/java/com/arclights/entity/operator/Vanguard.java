@@ -17,9 +17,11 @@ public class Vanguard extends Operator {
             SkillRecoveryType.OFFENSIVE,
             SkillActivationType.NEXT_ATTACK,
             4,
-            2.0,
-            1.8,
+            1,
+            0,
+            0.8,
             0.0,
+            null,
             true // give dp when activated
         ));
         
