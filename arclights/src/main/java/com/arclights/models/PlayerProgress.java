@@ -40,6 +40,7 @@ public class PlayerProgress {
 
     static {
         load();
+        ensureStarterOperators();
     }
 
     private PlayerProgress() {
@@ -95,6 +96,25 @@ public class PlayerProgress {
     /** Marks a stage as cleared. Idempotent; only writes to disk if this actually changed something. */
     public static void markCleared(String stageId) {
         if (stageId != null && clearedStages.add(stageId)) {
+            save();
+        }
+    }
+
+    /**
+     * Grants every player the two starter operators (Sniper + Defender) for
+     * free, so they always show up in the deployment bar exactly like
+     * before, while the remaining operators still have to be recruited in
+     * the shop. Idempotent; only writes to disk if this actually changed
+     * something (i.e. once, the first time a player's save is touched).
+     */
+    private static void ensureStarterOperators() {
+        boolean changed = false;
+        for (String operatorId : com.arclights.models.OperatorCatalog.STARTER_OPERATOR_IDS) {
+            if (ownedOperators.add(operatorId)) {
+                changed = true;
+            }
+        }
+        if (changed) {
             save();
         }
     }

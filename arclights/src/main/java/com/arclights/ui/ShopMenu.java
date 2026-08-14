@@ -13,10 +13,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-/**
- * Operator shop. The six operators here are placeholders and can be replaced
- * with real operator data/art later without changing the purchase system.
- */
 public class ShopMenu {
 
     public interface ShopCallbacks {
@@ -25,12 +21,14 @@ public class ShopMenu {
     }
 
     private static final OperatorOffer[] OFFERS = {
-        new OperatorOffer("placeholder_operator_1", "PLACEHOLDER 01", "SNIPER", 500),
-        new OperatorOffer("placeholder_operator_2", "PLACEHOLDER 02", "DEFENDER", 750),
+        new OperatorOffer("placeholder_operator_1", "PLACEHOLDER 01", "SNIPER", 0),
+        new OperatorOffer("placeholder_operator_2", "PLACEHOLDER 02", "DEFENDER", 0),
         new OperatorOffer("placeholder_operator_3", "PLACEHOLDER 03", "CASTER", 1000),
         new OperatorOffer("placeholder_operator_4", "PLACEHOLDER 04", "MEDIC", 1250),
         new OperatorOffer("placeholder_operator_5", "PLACEHOLDER 05", "GUARD", 1500),
-        new OperatorOffer("placeholder_operator_6", "PLACEHOLDER 06", "SPECIALIST", 2000)
+        new OperatorOffer("placeholder_operator_6", "PLACEHOLDER 06", "SPECIALIST", 1750),
+        new OperatorOffer("placeholder_operator_7", "PLACEHOLDER 07", "VANGUARD", 2000),
+        new OperatorOffer("placeholder_operator_8", "PLACEHOLDER 08", "SUPPORTER", 2500)
     };
 
     public static Scene createScene(Runnable onBackToMenu, Runnable onPurchaseComplete) {

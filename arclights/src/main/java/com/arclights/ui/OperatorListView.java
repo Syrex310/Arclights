@@ -25,12 +25,15 @@ public class OperatorListView {
         "placeholder_operator_3",
         "placeholder_operator_4",
         "placeholder_operator_5",
-        "placeholder_operator_6"
+        "placeholder_operator_6",
+        "placeholder_operator_7",
+        "placeholder_operator_8"
     };
 
     private static final String[] OPERATOR_NAMES = {
         "PLACEHOLDER 01", "PLACEHOLDER 02", "PLACEHOLDER 03",
-        "PLACEHOLDER 04", "PLACEHOLDER 05", "PLACEHOLDER 06"
+        "PLACEHOLDER 04", "PLACEHOLDER 05", "PLACEHOLDER 06",
+        "PLACEHOLDER 07", "PLACEHOLDER 08"
     };
 
     public static Scene createScene(OperatorArchiveCallbacks callbacks) {

@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.arclights.animation.EntityAnimationController;
+import com.arclights.animation.SpriteSizing;
 import com.arclights.entity.enemy.Enemy;
-import com.arclights.entity.operator.Defender;
 import com.arclights.entity.operator.Operator;
-import com.arclights.entity.operator.Sniper;
 import com.arclights.models.GameMap;
+import com.arclights.models.OperatorCatalog;
 import com.arclights.models.Tile;
 import com.arclights.ui.EntityLayer;
 import com.arclights.ui.MapRenderer;
@@ -24,7 +24,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 
 public class DeploymentManager {
-    public enum SelectionState { NONE, DRAGGING_SNIPER, DRAGGING_DEFENDER, SELECTING_DIRECTION }
+    public enum SelectionState { NONE, DRAGGING, SELECTING_DIRECTION }
 
     // Deployment Points (DP): starting pool, hard cap, and passive regen rate.
     // 1 DP is regenerated per second of game time. Since DeploymentManager.update()
@@ -53,6 +53,7 @@ public class DeploymentManager {
     private double offsetY;
 
     private SelectionState currentState = SelectionState.NONE;
+    private String draggingOperatorId;
     private Tile pendingTile;
     private int pendingCol;
     private int pendingRow;
@@ -110,30 +111,36 @@ public class DeploymentManager {
         return (int) MAX_DP;
     }
 
-    /** DP cost of the operator type tied to a given drag/selection state, without instantiating one. */
-    private int getCostForState(SelectionState state) {
-        if (state == SelectionState.DRAGGING_SNIPER) return Sniper.DEPLOY_COST;
-        if (state == SelectionState.DRAGGING_DEFENDER) return Defender.DEPLOY_COST;
-        return 0;
+    /** Whether the given tile allows the operator type described by this catalog definition to be placed on it. */
+    private boolean canPlaceOn(Tile tile, OperatorCatalog.Definition def) {
+        if (tile.isOccupied() || def == null) return false;
+        return def.placement == OperatorCatalog.Placement.RANGED
+            ? tile.canPlaceRanged()
+            : (tile.canPlaceMelee() || tile.isEnemyPath());
     }
 
-    /** Whether enough DP is currently banked to deploy the operator type for this state. */
-    public boolean canAfford(SelectionState dragType) {
-        return currentDP >= getCostForState(dragType);
+    /** Whether enough DP is currently banked to deploy the given owned operator (by catalog id). */
+    public boolean canAfford(String operatorId) {
+        OperatorCatalog.Definition def = OperatorCatalog.get(operatorId);
+        return def != null && currentDP >= def.deployCost;
     }
 
-    public void startDrag(SelectionState dragType) {
-        if (!canAfford(dragType)) return;
-        this.currentState = dragType;
+    public void startDrag(String operatorId) {
+        OperatorCatalog.Definition def = OperatorCatalog.get(operatorId);
+        if (def == null || !canAfford(operatorId)) return;
+
+        this.draggingOperatorId = operatorId;
+        this.currentState = SelectionState.DRAGGING;
         double minSize = Math.min(tileWidth, tileHeight);
         dragGhost.setRadius(minSize * 0.35); // Scale ghost proportionally to minimum tile dimension
-        dragGhost.setFill(dragType == SelectionState.DRAGGING_DEFENDER ? Color.rgb(0, 0, 255, 0.6) : Color.rgb(0, 255, 0, 0.6));
+        dragGhost.setFill(Color.color(
+            def.cardColor.getRed(), def.cardColor.getGreen(), def.cardColor.getBlue(), 0.6));
         dragGhost.setVisible(true);
     }
 
     public void updateDragPosition(double x, double y, GameMap gameMap) {
-        if (currentState == SelectionState.NONE || currentState == SelectionState.SELECTING_DIRECTION) return;
-        
+        if (currentState != SelectionState.DRAGGING) return;
+
         dragGhost.setCenterX(x);
         dragGhost.setCenterY(y);
 
@@ -143,83 +150,72 @@ public class DeploymentManager {
 
         clearRangePreview();
 
-        // If hovering over a valid tile space, show temporary range preview
-        if (row >= 0 && row < gameMap.getRows() && col >= 0 && col < gameMap.getCols()) {
-            Tile tile = gameMap.getTile(row, col);
-            if (!tile.isOccupied()) {
-                Operator tempOp = null;
-                if (currentState == SelectionState.DRAGGING_SNIPER && tile.canPlaceRanged()) {
-                    tempOp = new Sniper(col, row);
-                } else if (currentState == SelectionState.DRAGGING_DEFENDER && (tile.canPlaceMelee() || tile.isEnemyPath())) {
-                    tempOp = new Defender(col, row);
-                }
+        OperatorCatalog.Definition def = OperatorCatalog.get(draggingOperatorId);
 
-                if (tempOp != null) {
-                    showRangePreview(tempOp);
-                }
+        // If hovering over a valid tile space, show temporary range preview
+        if (def != null && row >= 0 && row < gameMap.getRows() && col >= 0 && col < gameMap.getCols()) {
+            Tile tile = gameMap.getTile(row, col);
+            if (canPlaceOn(tile, def)) {
+                showRangePreview(def.create(col, row));
             }
         }
     }
 
     public void handleRelease(double x, double y, GameMap gameMap) {
         dragGhost.setVisible(false);
-        if (currentState == SelectionState.NONE || currentState == SelectionState.SELECTING_DIRECTION) return;
+        if (currentState != SelectionState.DRAGGING) return;
 
         int col = (int) Math.floor((x - offsetX) / (tileWidth + paddingX));
         int row = (int) Math.floor((y - offsetY) / (tileHeight + paddingY));
 
-        if (row >= 0 && row < gameMap.getRows() && col >= 0 && col < gameMap.getCols()) {
+        OperatorCatalog.Definition def = OperatorCatalog.get(draggingOperatorId);
+
+        if (def != null && row >= 0 && row < gameMap.getRows() && col >= 0 && col < gameMap.getCols()) {
             Tile tile = gameMap.getTile(row, col);
-            
-            if (!tile.isOccupied()) {
-                if (currentState == SelectionState.DRAGGING_SNIPER && tile.canPlaceRanged()) {
-                    pendingOperator = new Sniper(col, row);
-                } else if (currentState == SelectionState.DRAGGING_DEFENDER && (tile.canPlaceMelee() || tile.isEnemyPath())) {
-                    pendingOperator = new Defender(col, row);
-                }
 
-                if (pendingOperator != null) {
-                    pendingOperator.setX(calcCenterX(col));
-                    pendingOperator.setY(calcCenterY(row));
-                    
-                    pendingTile = tile;
-                    pendingCol = col;
-                    pendingRow = row;
-                    currentState = SelectionState.SELECTING_DIRECTION;
+            if (canPlaceOn(tile, def)) {
+                pendingOperator = def.create(col, row);
 
-                    // Compute true center pixel coordinates of the tile
-                    double opCenterX = calcCenterX(col);
-                    double opCenterY = calcCenterY(row);
+                pendingOperator.setX(calcCenterX(col));
+                pendingOperator.setY(calcCenterY(row));
 
-                    // Initialize swipe tracking coords to unit tile's center
-                    this.directionStartX = opCenterX;
-                    this.directionStartY = opCenterY;
+                pendingTile = tile;
+                pendingCol = col;
+                pendingRow = row;
+                currentState = SelectionState.SELECTING_DIRECTION;
 
-                    // Lock preliminary unit layout circle in place
-                    double minDimension = Math.min(tileWidth, tileHeight);
-                    double radius = minDimension * (pendingOperator.isGround() ? 0.32 : 0.28);
-                    finalOpSprite = new Circle(radius);
-                    finalOpSprite.setFill(pendingOperator.isGround() ? Color.BLUE : Color.GREEN);
-                    finalOpSprite.setCenterX(opCenterX);
-                    finalOpSprite.setCenterY(opCenterY);
-                    root.getChildren().add(finalOpSprite);
+                // Compute true center pixel coordinates of the tile
+                double opCenterX = calcCenterX(col);
+                double opCenterY = calcCenterY(row);
 
-                    // Add navigation direction arrow asset
-                    finalDirectionArrow = new Polygon();
-                    double arrowScale = minDimension / 62.0; // Scale arrow relative to tile dimension
-                    finalDirectionArrow.getPoints().addAll(new Double[]{ 
-                        0.0 * arrowScale, -8.0 * arrowScale, 
-                        -6.0 * arrowScale,  4.0 * arrowScale, 
-                         6.0 * arrowScale,  4.0 * arrowScale 
-                    });
-                    finalDirectionArrow.setFill(Color.GOLD);
-                    finalDirectionArrow.setTranslateX(opCenterX);
-                    finalDirectionArrow.setTranslateY(opCenterY);
-                    root.getChildren().add(finalDirectionArrow);
+                // Initialize swipe tracking coords to unit tile's center
+                this.directionStartX = opCenterX;
+                this.directionStartY = opCenterY;
 
-                    showRangePreview(pendingOperator);
-                    return;
-                }
+                // Lock preliminary unit layout circle in place
+                double minDimension = Math.min(tileWidth, tileHeight);
+                double radius = minDimension * (pendingOperator.isGround() ? 0.32 : 0.28);
+                finalOpSprite = new Circle(radius);
+                finalOpSprite.setFill(pendingOperator.isGround() ? Color.BLUE : Color.GREEN);
+                finalOpSprite.setCenterX(opCenterX);
+                finalOpSprite.setCenterY(opCenterY);
+                root.getChildren().add(finalOpSprite);
+
+                // Add navigation direction arrow asset
+                finalDirectionArrow = new Polygon();
+                double arrowScale = minDimension / 62.0; // Scale arrow relative to tile dimension
+                finalDirectionArrow.getPoints().addAll(new Double[]{ 
+                    0.0 * arrowScale, -8.0 * arrowScale, 
+                    -6.0 * arrowScale,  4.0 * arrowScale, 
+                     6.0 * arrowScale,  4.0 * arrowScale 
+                });
+                finalDirectionArrow.setFill(Color.GOLD);
+                finalDirectionArrow.setTranslateX(opCenterX);
+                finalDirectionArrow.setTranslateY(opCenterY);
+                root.getChildren().add(finalDirectionArrow);
+
+                showRangePreview(pendingOperator);
+                return;
             }
         }
 
@@ -281,7 +277,7 @@ public class DeploymentManager {
         activeOperators.add(pendingOperator);
 
         // Create the real animated sprite only after deployment is confirmed.
-        double spriteSize = Math.min(tileWidth, tileHeight) * 2.35;
+        double spriteSize = SpriteSizing.operatorSize(tileWidth, tileHeight);
         Color fallbackColor = pendingOperator.isGround() ? Color.BLUE : Color.GREEN;
         EntityAnimationController animation = new EntityAnimationController(
             pendingOperator,
@@ -293,6 +289,7 @@ public class DeploymentManager {
             spriteSize
         );
         animations.put(pendingOperator, animation);
+        animation.triggerStart();
 
         javafx.scene.Node operatorSprite = animation.getSprite().getNode();
         final Operator deployedOperator = pendingOperator;
@@ -305,6 +302,7 @@ public class DeploymentManager {
         entityLayer.track(operatorSprite, pendingOperator::getY);
 
         currentState = SelectionState.NONE;
+        draggingOperatorId = null;
         pendingOperator = null;
         pendingTile = null;
         finalOpSprite = null;
@@ -322,6 +320,7 @@ public class DeploymentManager {
         if (finalDirectionArrow != null) root.getChildren().remove(finalDirectionArrow);
 
         currentState = SelectionState.NONE;
+        draggingOperatorId = null;
         pendingOperator = null;
         pendingTile = null;
         finalOpSprite = null;
@@ -365,8 +364,7 @@ public class DeploymentManager {
     }
 
     public double getGameSpeedMultiplier() {
-        if (currentState == SelectionState.DRAGGING_SNIPER || 
-            currentState == SelectionState.DRAGGING_DEFENDER || 
+        if (currentState == SelectionState.DRAGGING ||
             currentState == SelectionState.SELECTING_DIRECTION) {
             return 0.1;
         }

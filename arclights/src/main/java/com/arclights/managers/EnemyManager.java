@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.function.IntConsumer;
 
 import com.arclights.animation.EntityAnimationController;
+import com.arclights.animation.SpriteSizing;
 import com.arclights.entity.enemy.Enemy;
 import com.arclights.entity.enemy.EnemyType;
 import com.arclights.models.GameMap;
@@ -254,7 +255,7 @@ public class EnemyManager {
         );
         activeEnemies.add(enemy);
 
-        double spriteSize = Math.min(tileWidth, tileHeight) * 2.15;
+        double spriteSize = SpriteSizing.enemySize(tileWidth, tileHeight);
         EntityAnimationController animation = new EntityAnimationController(
             enemy,
             type.name(),

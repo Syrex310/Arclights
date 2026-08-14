@@ -10,12 +10,13 @@ import com.arclights.models.PlayerProgress;
 import com.arclights.models.wave.StageWaveConfigs;
 import com.arclights.models.wave.WaveConfig;
 import com.arclights.ui.EntityLayer;
+import com.arclights.ui.LoadingScreen;
 import com.arclights.ui.MapRenderer;
 import com.arclights.ui.OperatorDeploymentBar;
 import com.arclights.ui.OperatorListView;
+import com.arclights.ui.ShopMenu;
 import com.arclights.ui.StagePreview;
 import com.arclights.ui.StartMenu;
-import com.arclights.ui.ShopMenu;
 import com.arclights.ui.UILoader;
 
 import javafx.animation.AnimationTimer;
@@ -37,7 +38,19 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-        showStartMenu(stage);
+        showLoadingScreen(stage);
+    }
+
+    /**
+     * Shown first, before the player can touch anything: preloads every
+     * operator/enemy sprite animation for all three playable maps (see
+     * AssetPreloader) so the very first battle a player enters doesn't stall
+     * decoding PNGs on the FX thread.
+     */
+    private void showLoadingScreen(Stage stage) {
+        stage.setScene(LoadingScreen.createScene(() -> showStartMenu(stage)));
+        stage.setTitle("Arclights - Loading");
+        stage.show();
     }
 
     private void showStartMenu(Stage stage) {
@@ -191,9 +204,8 @@ public class App extends Application {
 
         InputController inputController = new InputController(deploymentManager, gameMap);
         inputController.attachInputHandlers(
-            root, 
-            deploymentBar.getSniperGroup(), 
-            deploymentBar.getDefenderGroup()
+            root,
+            deploymentBar.getOperatorCards()
         );
 
         WaveConfig waveConfig = StageWaveConfigs.getConfigForLayout(levelLayout);
