@@ -1,21 +1,13 @@
 package com.arclights.models.wave;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.arclights.entity.enemy.EnemyType;
-import com.arclights.models.GridPoint;
 import com.arclights.models.MapPresets;
 
-/**
- * Per-stage wave definitions, keyed off the same char[][] layout instances
- * used by MapPresets. Add a new stage's timeline here the same way
- * MapPresets registers a new map layout.
- */
 public class StageWaveConfigs {
 
-    // Legacy behaviour preserved: same 4 enemies that used to be hardcoded
-    // in App.java, now expressed as a single wave with no delay so nothing
-    // changes gameplay-wise for stages that don't define their own timeline.
     private static final WaveConfig DEFAULT_CONFIG = WaveConfig.of(
         Wave.builder()
             .label("Wave 1")
@@ -29,85 +21,170 @@ public class StageWaveConfigs {
 
     private static final WaveConfig STAGE_1_1_CONFIG = WaveConfig.of(
         Wave.builder()
-            .label("Wave 1")
-            .startDelay(1.0)
+            .label("Wave 0")
+            .startDelay(10.0)
             .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 0))
-            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 1.0))
-            .spawn(SpawnEntry.of(EnemyType.HOUND, 2.5))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 1))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 2))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 3))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 4))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 5))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 6))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 7))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 8))
+            .build(),
+        Wave.builder()
+            .label("Wave 1")
+            .startDelay(10.0)
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 0))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 1))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 2))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 3))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 6))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 7))
             .build(),
         Wave.builder()
             .label("Wave 2")
-            .startDelay(25.0) // relative to wave 1's start
-            .spawn(SpawnEntry.of(EnemyType.HOUND, 0))
-            .spawn(SpawnEntry.of(EnemyType.HOUND, 1.0))
-            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 3))
+            .startDelay(15.0)
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 0))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 1))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 2))
             .spawn(SpawnEntry.of(EnemyType.SOLDIER, 1))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 1.5))
             .build(),
         Wave.builder()
-            .label("Wave 3 - Boss")
-            .startDelay(25.0)
-            .spawn(SpawnEntry.of(EnemyType.BIG_BOB, 0))
-            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 1.0))
-            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 2.0))
+            .label("Wave 3")
+            .startDelay(15.0)
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 0))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 1))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 2))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 3))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 4))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 5))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 9))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 10))
             .build()
     );
 
-    private static final WaveConfig STAGE_1_2_CONFIG = WaveConfig.of(
-        Wave.builder()
-            .label("Wave 1")
-            .startDelay(1.0)
-            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 0))
-            .spawn(SpawnEntry.of(EnemyType.HOUND, 1.5))
-            .build(),
-        Wave.builder()
-            .label("Wave 2")
-            .startDelay(6.0)
-            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 0))
-            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 1.0))
-            .spawn(SpawnEntry.of(EnemyType.HOUND, 2.0))
-            .build()
-    );
-
-    // Stage 1-3 has two 'S' spawn tiles (top at row0,col4 and left at row3,col0).
-    // Demonstrates: per-entry custom spawn point, and a fully custom hand-drawn
-    // route (grid waypoints) instead of the default BFS path.
     private static final WaveConfig STAGE_1_3_CONFIG = WaveConfig.of(
         Wave.builder()
-            .label("Wave 1 - North gate")
-            .startDelay(1.0)
-            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 0, 0, 4))
-            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 1.0, 0, 4))
+            .label("Wave 1")
+            .startDelay(10)
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 0))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 1))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 2))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 3))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 4))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 6.5))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 9))
             .build(),
         Wave.builder()
-            .label("Wave 2 - West gate")
-            .startDelay(6.0)
-            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 0, 3, 0))
-            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 1.5, 3, 0))
+            .label("Wave 2")
+            .startDelay(15)
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 0, 0, 4))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 1, 0, 4))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 2, 0, 4))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 5, 0, 4))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 6, 0, 4))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 7, 0, 4))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 10, 0, 4))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 12, 0, 4))
             .build(),
         Wave.builder()
-            .label("Wave 3 - Custom route rush")
-            .startDelay(6.0)
-            // Explicit hand-authored route from the north gate straight down
-            // the middle column instead of the shortest BFS path.
-            .spawn(SpawnEntry.withCustomPath(EnemyType.HOUND, 0, Arrays.asList(
-                new GridPoint(0, 4),
-                new GridPoint(1, 4),
-                new GridPoint(2, 4),
-                new GridPoint(3, 4),
-                new GridPoint(3, 5),
-                new GridPoint(4, 5),
-                new GridPoint(5, 5),
-                new GridPoint(6, 5)
-
-            )))
-            .spawn(SpawnEntry.atSpawnPoint(EnemyType.BIG_BOB, 2.0, 3, 0))
+            .label("Wave 3")
+            .startDelay(10)
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 0))
+            .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 2, 0, 4))
+            .spawn(SpawnEntry.of(EnemyType.HOUND, 3))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 4))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 5))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 5, 0, 4))
+            .spawn(SpawnEntry.of(EnemyType.BIG_BOB, 6))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 9))
+            .spawn(SpawnEntry.of(EnemyType.SOLDIER, 10))
             .build()
     );
+
+    private static final double STAGE_1_4_GROWTH_PER_WAVE = 0.10; // +10% per wave, compounding
+
+    private static final List<Wave> STAGE_1_4_TEMPLATE_WAVES = Arrays.asList(
+        Wave.builder()
+            .label("S1")
+            .startDelay(10)
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 0, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 1, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 4, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 5, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 8, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 9, 0, 1))
+            .build(),
+        Wave.builder()
+            .label("S2")
+            .startDelay(10)
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 0, 4, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 1, 4, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 2, 4, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 3, 4, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 4, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 5, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 6, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 7, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 9, 4, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 10, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 14, 4, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 15, 5, 0))
+            .build(),
+        Wave.builder()
+            .label("S3")
+            .startDelay(10)
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 0, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 4, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 8, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 9, 0, 1))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 2, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 3, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 6, 4, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 7, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 11, 4, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 12, 5, 0))
+            .spawn(SpawnEntry.atSpawnPoint(EnemyType.BIG_BOB, 18, 4, 0))
+            .build()
+    );
+
+
+    public static final EndlessWaveGenerator STAGE_1_4_ENDLESS_GENERATOR = waveIndex -> {
+        Wave template = STAGE_1_4_TEMPLATE_WAVES.get(waveIndex % STAGE_1_4_TEMPLATE_WAVES.size());
+        double statMultiplier = Math.pow(1.0 + STAGE_1_4_GROWTH_PER_WAVE, waveIndex);
+
+        Wave.Builder builder = Wave.builder()
+            .label(String.format("Wave %d - %s (x%.2f)", waveIndex + 1, template.getLabel(), statMultiplier))
+            .startDelay(template.getStartDelaySeconds());
+
+        for (SpawnEntry entry : template.getSpawns()) {
+            builder.spawn(entry.withStatMultiplier(statMultiplier));
+        }
+
+        return builder.build();
+    };
+
+    /** True if this layout's stage is endless (see {@link #getInfiniteGeneratorForLayout}) rather than a finite WaveConfig. */
+    public static boolean isInfinite(char[][] layout) {
+        return layout == MapPresets.LEVEL_4_LAYOUT;
+    }
+
+    /** Endless wave generator for infinite stages, or null if this layout uses a normal finite WaveConfig. */
+    public static EndlessWaveGenerator getInfiniteGeneratorForLayout(char[][] layout) {
+        if (layout == MapPresets.LEVEL_4_LAYOUT) return STAGE_1_4_ENDLESS_GENERATOR;
+        return null;
+    }
 
     public static WaveConfig getConfigForLayout(char[][] layout) {
         if (layout == MapPresets.LEVEL_1_LAYOUT) return STAGE_1_1_CONFIG;
-        if (layout == MapPresets.LEVEL_2_LAYOUT) return STAGE_1_2_CONFIG;
+        if (layout == MapPresets.LEVEL_2_LAYOUT) return DEFAULT_CONFIG;
         if (layout == MapPresets.LEVEL_3_LAYOUT) return STAGE_1_3_CONFIG;
+        // LEVEL_4_LAYOUT is endless -> handled via isInfinite()/getInfiniteGeneratorForLayout()
+        // + EnemyManager.loadInfiniteWaveConfig() instead of a finite WaveConfig.
         return DEFAULT_CONFIG;
     }
 }

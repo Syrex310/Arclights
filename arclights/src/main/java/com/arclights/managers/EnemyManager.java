@@ -18,7 +18,9 @@ import com.arclights.models.GameMap;
 import com.arclights.models.GridPoint;
 import com.arclights.models.PlayerProgress;
 import com.arclights.models.Tile;
+import com.arclights.models.wave.EndlessWaveGenerator;
 import com.arclights.models.wave.SpawnEntry;
+import com.arclights.models.wave.Wave;
 import com.arclights.models.wave.WaveConfig;
 import com.arclights.ui.EntityLayer;
 import com.arclights.ui.MapRenderer;
@@ -56,6 +58,20 @@ public class EnemyManager {
     private int nextScheduledIndex = 0;
     private double elapsedSeconds = 0;
     private static final double SECONDS_PER_UPDATE = 1.0 / 60.0; // matches App's ~60Hz simulation tick
+
+    // Endless-mode state: when set, waves are generated lazily instead of
+    // coming from a fixed, finite WaveConfig. See EndlessWaveGenerator.
+    private EndlessWaveGenerator infiniteWaveGenerator = null;
+    private int nextGeneratedWaveIndex = 0;
+    private double infiniteWaveClock = 0;
+    // Always keep at least this many seconds of already-generated spawns
+    // queued up ahead of the current clock, so we never generate on the
+    // exact frame a wave is due.
+    private static final double INFINITE_LOOKAHEAD_SECONDS = 5.0;
+    // Once this many spawns have been dispatched, drop them from the front
+    // of scheduledSpawns so a long-running endless session doesn't grow the
+    // list forever.
+    private static final int INFINITE_TRIM_THRESHOLD = 500;
 
     // Base lives (Arknights-style): every map defaults to 3. An enemy that
     // walks its full path and reaches the objective consumes one life
@@ -230,6 +246,17 @@ public class EnemyManager {
      *                   the default BFS route from spawnPoint to PLAYER_OBJECTIVE is used
      */
     public void spawnEnemy(EnemyType type, GridPoint spawnPoint, List<GridPoint> customPath) {
+        spawnEnemy(type, spawnPoint, customPath, 1.0);
+    }
+
+    /**
+     * Same as {@link #spawnEnemy(EnemyType, GridPoint, List)}, but scales the
+     * spawned enemy's HP/ATK/DEF/RES by {@code statMultiplier} (1.0 = base
+     * EnemyType stats). Used by endless stages to make enemies progressively
+     * stronger wave after wave. Resistance is clamped to 100% since it's a
+     * damage-reduction fraction, not a raw stat.
+     */
+    public void spawnEnemy(EnemyType type, GridPoint spawnPoint, List<GridPoint> customPath, double statMultiplier) {
         GridPoint origin = spawnPoint != null ? spawnPoint : new GridPoint(spawnRow, spawnCol);
 
         List<Point2D> path;
@@ -239,17 +266,19 @@ public class EnemyManager {
             path = computeBfsPath(origin);
         }
 
+        double mult = statMultiplier <= 0 ? 1.0 : statMultiplier;
+
         Enemy enemy = new Enemy(
             calcX(origin.c),
             calcY(origin.r),
-            type.getHp(),
-            type.getAtk(),
+            type.getHp() * mult,
+            type.getAtk() * mult,
             type.getBlockCount(),
             type.getAttackType(),
             type.getAttackInterval(),
-            type.getResistance(),
+            Math.min(1.0, type.getResistance() * mult),
             type.isGround(),
-            type.getDefense(),
+            type.getDefense() * mult,
             type.getSpeed(),
             path
         );
@@ -291,13 +320,60 @@ public class EnemyManager {
         this.elapsedSeconds = 0;
         this.waveConfigLoaded = true;
         this.stageCleared = false;
+        this.infiniteWaveGenerator = null;
     }
 
-    /** Processes due spawns from the loaded WaveConfig, if any. Called once per simulated frame from update(). */
+    /**
+     * Loads an endless/infinite stage: instead of a fixed, finite list of
+     * waves, {@code generator} is asked to produce one more {@link Wave}
+     * at a time, lazily, as the stage clock approaches needing it. The
+     * stage then never reaches "wave spawning finished" / stage-cleared —
+     * it simply keeps going, wave after wave, each one typically stronger
+     * than the last, until the player runs out of lives.
+     */
+    public void loadInfiniteWaveConfig(EndlessWaveGenerator generator) {
+        this.scheduledSpawns = new ArrayList<>();
+        this.nextScheduledIndex = 0;
+        this.elapsedSeconds = 0;
+        this.waveConfigLoaded = true;
+        this.stageCleared = false;
+        this.infiniteWaveGenerator = generator;
+        this.nextGeneratedWaveIndex = 0;
+        this.infiniteWaveClock = 0;
+    }
+
+    /** Pulls one more wave out of the endless generator and queues its spawns. */
+    private void generateNextInfiniteWave() {
+        if (infiniteWaveGenerator == null) return;
+
+        Wave wave = infiniteWaveGenerator.generateWave(nextGeneratedWaveIndex);
+        if (wave == null) return; // defensive: a misbehaving generator shouldn't crash the run
+
+        infiniteWaveClock += wave.getStartDelaySeconds();
+
+        scheduledSpawns.addAll(
+            WaveConfig.flattenSingleWave(wave, infiniteWaveClock, nextGeneratedWaveIndex)
+        );
+
+        nextGeneratedWaveIndex++;
+    }
+
+    /** Processes due spawns from the loaded WaveConfig (or endless generator), if any. Called once per simulated frame from update(). */
     private void processScheduledSpawns() {
-        if (scheduledSpawns.isEmpty()) return;
+        if (scheduledSpawns.isEmpty() && infiniteWaveGenerator == null) return;
 
         elapsedSeconds += SECONDS_PER_UPDATE;
+
+        // Endless mode: keep a rolling window of already-generated spawns
+        // ahead of the clock, generating more waves as needed. This is what
+        // makes the stage effectively infinite without ever materializing
+        // more than a small lookahead window in memory.
+        while (infiniteWaveGenerator != null
+                && (scheduledSpawns.isEmpty()
+                    || scheduledSpawns.get(scheduledSpawns.size() - 1).absoluteTimeSeconds
+                            <= elapsedSeconds + INFINITE_LOOKAHEAD_SECONDS)) {
+            generateNextInfiniteWave();
+        }
 
         while (nextScheduledIndex < scheduledSpawns.size()
                 && scheduledSpawns.get(nextScheduledIndex).absoluteTimeSeconds <= elapsedSeconds) {
@@ -308,14 +384,33 @@ public class EnemyManager {
             GridPoint spawnPoint = entry.hasCustomSpawnPoint() ? entry.getSpawnPoint() : null;
             List<GridPoint> customPath = entry.hasCustomPath() ? entry.getCustomPath() : null;
 
-            spawnEnemy(entry.getEnemyType(), spawnPoint, customPath);
+            spawnEnemy(entry.getEnemyType(), spawnPoint, customPath, entry.getStatMultiplier());
             nextScheduledIndex++;
+        }
+
+        // Bound memory for very long endless runs: forget spawns we've
+        // already dispatched once there's a healthy backlog of them.
+        if (infiniteWaveGenerator != null && nextScheduledIndex > INFINITE_TRIM_THRESHOLD) {
+            scheduledSpawns.subList(0, nextScheduledIndex).clear();
+            nextScheduledIndex = 0;
         }
     }
 
-    /** True once every scheduled spawn from the loaded WaveConfig has been dispatched. */
+    /**
+     * True once every scheduled spawn from the loaded WaveConfig has been
+     * dispatched. Endless stages never finish spawning by definition, so
+     * this always returns false while an EndlessWaveGenerator is active —
+     * which in turn means {@link #checkStageClear()} never fires for them;
+     * the run only ends via {@link #loseLife()} reaching zero lives.
+     */
     public boolean isWaveSpawningFinished() {
+        if (infiniteWaveGenerator != null) return false;
         return scheduledSpawns.isEmpty() || nextScheduledIndex >= scheduledSpawns.size();
+    }
+
+    /** True if the currently loaded stage is an endless/infinite one. */
+    public boolean isInfiniteStage() {
+        return infiniteWaveGenerator != null;
     }
 
     public void update() {

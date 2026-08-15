@@ -27,15 +27,24 @@ public class SpawnEntry {
     private final GridPoint spawnPoint; // nullable -> use map's default spawn tile
     private final List<GridPoint> customPath; // nullable/empty -> use default BFS path
 
+    // Multiplies the spawned enemy's HP/ATK/DEF/RES relative to its base
+    // EnemyType values. 1.0 = base stats. Used by endless wave generators to
+    // scale a repeating wave template up over time (e.g. 1.10 = +10%).
+    private final double statMultiplier;
+
     public SpawnEntry(EnemyType enemyType, double delaySeconds) {
-        this(enemyType, delaySeconds, null, null);
+        this(enemyType, delaySeconds, null, null, 1.0);
     }
 
     public SpawnEntry(EnemyType enemyType, double delaySeconds, GridPoint spawnPoint) {
-        this(enemyType, delaySeconds, spawnPoint, null);
+        this(enemyType, delaySeconds, spawnPoint, null, 1.0);
     }
 
     public SpawnEntry(EnemyType enemyType, double delaySeconds, GridPoint spawnPoint, List<GridPoint> customPath) {
+        this(enemyType, delaySeconds, spawnPoint, customPath, 1.0);
+    }
+
+    public SpawnEntry(EnemyType enemyType, double delaySeconds, GridPoint spawnPoint, List<GridPoint> customPath, double statMultiplier) {
         if (enemyType == null) {
             throw new IllegalArgumentException("enemyType cannot be null");
         }
@@ -43,6 +52,7 @@ public class SpawnEntry {
         this.delaySeconds = Math.max(0, delaySeconds);
         this.spawnPoint = spawnPoint;
         this.customPath = customPath == null ? Collections.emptyList() : new ArrayList<>(customPath);
+        this.statMultiplier = statMultiplier <= 0 ? 1.0 : statMultiplier;
     }
 
     /** Convenience factory for the common "just spawn N seconds in" case. */
@@ -61,10 +71,21 @@ public class SpawnEntry {
         return new SpawnEntry(type, delaySeconds, start, path);
     }
 
+    /**
+     * Returns a copy of this entry with a different stat multiplier applied
+     * to the spawned enemy's HP/ATK/DEF/RES (spawn timing/point/path stay
+     * the same). Example: {@code entry.withStatMultiplier(1.21)} spawns the
+     * same enemy at +21% HP/ATK/DEF/RES.
+     */
+    public SpawnEntry withStatMultiplier(double statMultiplier) {
+        return new SpawnEntry(enemyType, delaySeconds, spawnPoint, customPath, statMultiplier);
+    }
+
     public EnemyType getEnemyType() { return enemyType; }
     public double getDelaySeconds() { return delaySeconds; }
     public GridPoint getSpawnPoint() { return spawnPoint; }
     public boolean hasCustomSpawnPoint() { return spawnPoint != null; }
     public List<GridPoint> getCustomPath() { return customPath; }
     public boolean hasCustomPath() { return customPath != null && !customPath.isEmpty(); }
+    public double getStatMultiplier() { return statMultiplier; }
 }

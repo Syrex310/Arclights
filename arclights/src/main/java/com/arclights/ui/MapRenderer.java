@@ -155,7 +155,7 @@ public class MapRenderer {
         }
 
         // interactive overlays & debug
-        drawInteractiveGrid(root, gameMap, tileWidth, tileHeight, paddingX, paddingY, offsetX, offsetY);
+        //drawInteractiveGrid(root, gameMap, tileWidth, tileHeight, paddingX, paddingY, offsetX, offsetY);
 
         return new RenderResult(tileWidth, tileHeight, paddingX, paddingY, offsetX, offsetY);
     }

@@ -39,7 +39,7 @@ public class StagePreview {
         Pane card1 = createStageCard("1-1", "Starter", "Starter", MapPresets.STAGE_1_1.getLayout(), "#ff9b00", callbacks);
         //Pane card2 = createStageCard("01-02", "NARROW PASSAGE", "Defensive tactics exercise in a constrained corridor.", MapPresets.STAGE_1_2.getLayout(), "#00a2ff", callbacks);
         Pane card3 = createStageCard("1-2", "Crossroad", "Intermediate", MapPresets.STAGE_1_3.getLayout(), "#00ff55", callbacks);
-        Pane card4 = createStageCard("1-3", "Infinite", "Hard", MapPresets.STAGE_1_4.getLayout(), "#0073ff", callbacks);
+        Pane card4 = createStageCard("1-3", "Infinite", "Enemies gain +10% stat each wave", MapPresets.STAGE_1_4.getLayout(), "#0073ff", callbacks);
 
         cardsBox.getChildren().addAll(card1, card3, card4);
         root.getChildren().add(cardsBox);

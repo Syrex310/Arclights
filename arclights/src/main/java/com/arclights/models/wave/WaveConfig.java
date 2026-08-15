@@ -63,4 +63,33 @@ public class WaveConfig {
     }
 
     public boolean isEmpty() { return waves.isEmpty(); }
+
+    /**
+     * Flattens a single wave into scheduled spawns, given the absolute clock
+     * time (seconds since stage start) at which that wave itself begins.
+     *
+     * This is the single-wave counterpart to {@link #flatten()}, used by
+     * {@link EndlessWaveGenerator}-driven endless stages: since there's no
+     * fixed, finite list of waves to flatten up front, EnemyManager instead
+     * calls this once per generated wave, right before it's needed, and
+     * keeps a running {@code waveStartTime} clock across calls (mirroring
+     * the accumulation {@link #flatten()} does internally for a normal,
+     * finite {@link WaveConfig}).
+     */
+    public static List<ScheduledSpawn> flattenSingleWave(Wave wave, double waveStartTime, int waveIndex) {
+        List<ScheduledSpawn> result = new ArrayList<>();
+
+        for (SpawnEntry entry : wave.getSpawns()) {
+            double absoluteTime = waveStartTime + entry.getDelaySeconds();
+            result.add(new ScheduledSpawn(absoluteTime, entry, waveIndex));
+        }
+
+        // Same as flatten(): callers (EnemyManager) walk this list strictly
+        // in order via a single forward index, so it must be time-sorted
+        // even if the wave's own SpawnEntry list wasn't authored in
+        // ascending-delay order (e.g. entries interleaved across multiple
+        // spawn points, like Stage 1-4's S3 template).
+        result.sort((a, b) -> Double.compare(a.absoluteTimeSeconds, b.absoluteTimeSeconds));
+        return result;
+    }
 }

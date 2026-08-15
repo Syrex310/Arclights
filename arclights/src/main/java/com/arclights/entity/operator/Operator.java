@@ -575,6 +575,50 @@ public class Operator extends GameEntity {
         return best;
     }
 
+    /**
+     * Like {@link #findHealTargetInGridRange}, but returns every ally inside
+     * this operator's range that isn't already at full HP, instead of just
+     * the single most-injured one. Used by AoE-style healers (e.g.
+     * {@link Supporter}) that heal everyone in range at once rather than
+     * picking one target per proc.
+     */
+    protected List<Operator> findAllHealTargetsInGridRange(
+            List<Operator> allies) {
+
+        List<Point2D> targetTiles =
+            getAbsoluteRangeTiles();
+
+        List<Operator> targets = new ArrayList<>();
+
+        for (Operator ally : allies) {
+
+            if (
+                ally == null
+                || !ally.isAlive()
+                || ally.getHp() >= ally.getMaxHp()
+            ) {
+                continue;
+            }
+
+            for (Point2D tile : targetTiles) {
+
+                if (
+                    (int) tile.getX()
+                        == ally.getGridX()
+                    &&
+                    (int) tile.getY()
+                        == ally.getGridY()
+                ) {
+
+                    targets.add(ally);
+                    break;
+                }
+            }
+        }
+
+        return targets;
+    }
+
     @Override
     public void update() {
         // Operator uses update(activeEnemies, allies)

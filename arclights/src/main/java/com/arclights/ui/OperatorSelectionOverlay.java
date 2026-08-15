@@ -139,8 +139,8 @@ public class OperatorSelectionOverlay {
     }
 
     private void buildStatPanel(double screenHeight) {
-        statPanel.setPrefSize(PORTRAIT_SIZE, PORTRAIT_SIZE);
-        statPanel.setMaxSize(PORTRAIT_SIZE, PORTRAIT_SIZE);
+        statPanel.setPrefSize(PORTRAIT_SIZE + 130, PORTRAIT_SIZE);
+        statPanel.setMaxSize(PORTRAIT_SIZE + 130, PORTRAIT_SIZE);
         statPanel.setLayoutX(16);
         statPanel.setLayoutY(screenHeight - PORTRAIT_SIZE - 16);
         statPanel.setMouseTransparent(false);
@@ -171,7 +171,7 @@ public class OperatorSelectionOverlay {
 
         javafx.scene.layout.VBox statsBox = new javafx.scene.layout.VBox(2,
             nameLabel, hpLabel, atkLabel, defLabel, resLabel, intervalLabel, blockLabel);
-        statsBox.setLayoutX(6);
+        statsBox.setLayoutX(PORTRAIT_SIZE + 8);
         statsBox.setLayoutY(6);
         statsBox.setStyle(
             "-fx-background-color: rgba(10, 12, 16, 0.55);" +

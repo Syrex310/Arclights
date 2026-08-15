@@ -245,8 +245,12 @@ public class App extends Application {
             deploymentBar.getOperatorCards()
         );
 
-        WaveConfig waveConfig = StageWaveConfigs.getConfigForLayout(levelLayout);
-        enemyManager.loadWaveConfig(waveConfig);
+        if (StageWaveConfigs.isInfinite(levelLayout)) {
+            enemyManager.loadInfiniteWaveConfig(StageWaveConfigs.getInfiniteGeneratorForLayout(levelLayout));
+        } else {
+            WaveConfig waveConfig = StageWaveConfigs.getConfigForLayout(levelLayout);
+            enemyManager.loadWaveConfig(waveConfig);
+        }
 
         gameLoop = new AnimationTimer() {
             private long lastTime = 0;
