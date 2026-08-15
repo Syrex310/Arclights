@@ -35,7 +35,7 @@ public class StageWaveConfigs {
             .build(),
         Wave.builder()
             .label("Wave 1")
-            .startDelay(10.0)
+            .startDelay(15.0)
             .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 0))
             .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 1))
             .spawn(SpawnEntry.of(EnemyType.HOUND, 2))
@@ -54,7 +54,7 @@ public class StageWaveConfigs {
             .build(),
         Wave.builder()
             .label("Wave 3")
-            .startDelay(15.0)
+            .startDelay(10.0)
             .spawn(SpawnEntry.of(EnemyType.HOUND, 0))
             .spawn(SpawnEntry.of(EnemyType.HOUND, 1))
             .spawn(SpawnEntry.of(EnemyType.HOUND, 2))
@@ -80,7 +80,7 @@ public class StageWaveConfigs {
             .build(),
         Wave.builder()
             .label("Wave 2")
-            .startDelay(15)
+            .startDelay(20)
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 0, 0, 4))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 1, 0, 4))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 2, 0, 4))
@@ -92,7 +92,7 @@ public class StageWaveConfigs {
             .build(),
         Wave.builder()
             .label("Wave 3")
-            .startDelay(10)
+            .startDelay(20)
             .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 0))
             .spawn(SpawnEntry.of(EnemyType.ORIGINIUM_SLUG, 1))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 2, 0, 4))
@@ -111,7 +111,7 @@ public class StageWaveConfigs {
     private static final List<Wave> STAGE_1_4_TEMPLATE_WAVES = Arrays.asList(
         Wave.builder()
             .label("S1")
-            .startDelay(10)
+            .startDelay(30)
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 0, 0, 1))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 1, 0, 1))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 4, 0, 1))
@@ -121,7 +121,7 @@ public class StageWaveConfigs {
             .build(),
         Wave.builder()
             .label("S2")
-            .startDelay(10)
+            .startDelay(30)
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 0, 4, 0))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 1, 4, 0))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 2, 4, 0))
@@ -137,7 +137,7 @@ public class StageWaveConfigs {
             .build(),
         Wave.builder()
             .label("S3")
-            .startDelay(10)
+            .startDelay(30)
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.ORIGINIUM_SLUG, 0, 0, 1))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.HOUND, 4, 0, 1))
             .spawn(SpawnEntry.atSpawnPoint(EnemyType.SOLDIER, 8, 0, 1))

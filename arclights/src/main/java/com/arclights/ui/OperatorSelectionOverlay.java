@@ -28,7 +28,6 @@ public class OperatorSelectionOverlay {
 
     private final Group overlayContainer = new Group();
 
-    // --- Diamond + retreat/skill squares, anchored to the operator ---
     private final Group indicatorGroup = new Group();
     private final Polygon diamond = new Polygon();
     private final StackPane retreatSquare = new StackPane();
@@ -36,7 +35,6 @@ public class OperatorSelectionOverlay {
     private final Rectangle skillFill = new Rectangle();
     private final Label skillSpLabel = new Label();
 
-    // --- Bottom-left stat panel, fixed on screen ---
     private final Pane statPanel = new Pane();
     private final ImageView portraitView = new ImageView();
     private final Rectangle portraitFallback = new Rectangle(PORTRAIT_SIZE, PORTRAIT_SIZE);
@@ -267,7 +265,6 @@ public class OperatorSelectionOverlay {
     }
 
     private void bindStats(Operator operator, OperatorCatalog.Definition definition) {
-        //cancel old binding
         atkLabel.textProperty().unbind();
         defLabel.textProperty().unbind();
 

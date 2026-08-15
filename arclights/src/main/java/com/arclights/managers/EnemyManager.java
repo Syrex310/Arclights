@@ -48,6 +48,13 @@ public class EnemyManager {
     private int targetRow = -1;
     private int targetCol = -1;
 
+    // All PLAYER_OBJECTIVE tiles on the map (some maps, like the Infinite
+    // stage, have more than one). BFS treats this whole set as the goal and
+    // stops at whichever one it reaches first — since BFS expands in order
+    // of distance, that is guaranteed to be the *nearest* objective to the
+    // given spawn point.
+    private final List<GridPoint> targets = new ArrayList<>();
+
     // Cache of BFS-computed default routes, keyed by spawn point, so maps
     // with multiple ENEMY_SPAWN tiles ('S') can each get their own default
     // route to the objective without recomputing every spawn.
@@ -123,9 +130,8 @@ public class EnemyManager {
     private void initPath() {
         int detectedSpawnRow = -1;
         int detectedSpawnCol = -1;
-        int detectedTargetRow = -1;
-        int detectedTargetCol = -1;
 
+        targets.clear();
         for (int r = 0; r < gameMap.getRows(); r++) {
             for (int c = 0; c < gameMap.getCols(); c++) {
                 Tile tile = gameMap.getTile(r, c);
@@ -133,8 +139,9 @@ public class EnemyManager {
                     detectedSpawnRow = r;
                     detectedSpawnCol = c;
                 } else if (tile.getTileType() == Tile.TileType.PLAYER_OBJECTIVE) {
-                    detectedTargetRow = r;
-                    detectedTargetCol = c;
+                    // Collect every objective tile instead of overwriting -
+                    // maps like the Infinite stage (map1-4) have two.
+                    targets.add(new GridPoint(r, c));
                 }
             }
         }
@@ -143,17 +150,20 @@ public class EnemyManager {
             this.spawnRow = detectedSpawnRow;
             this.spawnCol = detectedSpawnCol;
         }
-        this.targetRow = detectedTargetRow;
-        this.targetCol = detectedTargetCol;
+        if (!targets.isEmpty()) {
+            this.targetRow = targets.get(0).r;
+            this.targetCol = targets.get(0).c;
+        }
 
-        if (spawnRow == -1 || spawnCol == -1 || targetRow == -1 || targetCol == -1) {
+        if (spawnRow == -1 || spawnCol == -1 || targets.isEmpty()) {
             this.spawnRow = 1;
             this.spawnCol = 0;
             this.targetRow = 3;
             this.targetCol = 7;
+            targets.clear();
+            targets.add(new GridPoint(targetRow, targetCol));
         }
 
-        // Default legacy path, kept for backward-compatible spawnEnemy(EnemyType) calls.
         List<Point2D> path = computeBfsPath(new GridPoint(spawnRow, spawnCol));
         enemyPath.addAll(path);
         defaultPathCache.put(new GridPoint(spawnRow, spawnCol), enemyPath);
@@ -169,22 +179,30 @@ public class EnemyManager {
         List<Point2D> cached = defaultPathCache.get(start);
         if (cached != null) return cached;
 
+        // Multi-target BFS: goal is "reach ANY tile in targetSet", not one
+        // fixed (targetRow, targetCol). Since plain BFS on an unweighted
+        // grid always expands nodes in strictly non-decreasing distance
+        // order, the very first target tile popped off the queue is
+        // guaranteed to be the nearest one to `start` - so this is still
+        // an optimal shortest path, it just now considers every objective
+        // on the map instead of only whichever one initPath() saw last.
+        Set<GridPoint> targetSet = new HashSet<>(targets);
+
         Queue<GridPoint> queue = new LinkedList<>();
         Set<GridPoint> visited = new HashSet<>();
         Map<GridPoint, GridPoint> parentMap = new HashMap<>();
-        GridPoint target = new GridPoint(targetRow, targetCol);
 
         queue.add(start);
         visited.add(start);
 
-        boolean found = false;
+        GridPoint reachedTarget = null;
         int[] dr = {-1, 1, 0, 0};
         int[] dc = {0, 0, -1, 1};
 
         while (!queue.isEmpty()) {
             GridPoint curr = queue.poll();
-            if (curr.r == target.r && curr.c == target.c) {
-                found = true;
+            if (targetSet.contains(curr)) {
+                reachedTarget = curr;
                 break;
             }
 
@@ -207,14 +225,14 @@ public class EnemyManager {
         }
 
         List<Point2D> path = new ArrayList<>();
-        if (found) {
-            GridPoint curr = target;
+        if (reachedTarget != null) {
+            GridPoint curr = reachedTarget;
             while (curr != null) {
                 path.add(0, new Point2D(calcX(curr.c), calcY(curr.r)));
                 curr = parentMap.get(curr);
             }
             if (!path.isEmpty()) {
-                path.remove(0); // Exclude starting point itself
+                path.remove(0);
             }
         }
 
@@ -232,7 +250,6 @@ public class EnemyManager {
         return path;
     }
 
-    /** Legacy/simple entry point: spawns at the map's default detected spawn tile using the default BFS route. */
     public void spawnEnemy(EnemyType type) {
         spawnEnemy(type, new GridPoint(spawnRow, spawnCol), null);
     }
@@ -347,7 +364,7 @@ public class EnemyManager {
         if (infiniteWaveGenerator == null) return;
 
         Wave wave = infiniteWaveGenerator.generateWave(nextGeneratedWaveIndex);
-        if (wave == null) return; // defensive: a misbehaving generator shouldn't crash the run
+        if (wave == null) return;
 
         infiniteWaveClock += wave.getStartDelaySeconds();
 

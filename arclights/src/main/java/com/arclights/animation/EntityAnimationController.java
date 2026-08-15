@@ -41,11 +41,6 @@ public final class EntityAnimationController {
 
     private void load(AnimationState state, String group, double ticksPerFrame, boolean loop) {
         String path = "/sprites/" + group + "/" + spriteId + "/" + state.name().toLowerCase();
-        System.out.println(
-            "[Animation] " +
-            (enemy ? "ENEMY" : "OPERATOR") +
-            " -> " + path
-        );
         sprite.setAnimation(state, SpriteAnimation.load(path, ticksPerFrame, loop, spriteWidth, spriteHeight));
     }
 
@@ -77,8 +72,6 @@ public final class EntityAnimationController {
             return;
         }
 
-        // Let the deploy animation finish uninterrupted before falling back
-        // to the normal idle/walk/attack state machine below.
         if (sprite.getCurrentState() == AnimationState.START && !sprite.isCurrentAnimationFinished()) {
             sprite.update();
             return;

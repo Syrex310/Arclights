@@ -18,7 +18,6 @@ public class OperatorListView {
         void onBackToMenu();
     }
 
-    // These IDs/names are placeholders until real operator data is added.
     private static final String[] OPERATOR_IDS = {
         "placeholder_operator_1",
         "placeholder_operator_2",
@@ -120,7 +119,6 @@ public class OperatorListView {
             "-fx-border-radius: 4px; -fx-padding: 15px;"
         );
 
-        //Rectangle icon = new Rectangle(42, 42, Color.web("#555b66"));
         ImageView icon = UILoader.createImageView(icon_path, 0, 0, 42, 42);
         Label title = new Label(name);
         title.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 14px; -fx-font-family: 'Arial'; -fx-font-weight: bold;");

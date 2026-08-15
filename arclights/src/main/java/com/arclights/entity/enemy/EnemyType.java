@@ -22,12 +22,10 @@ public enum EnemyType {
     private final Color color;
     private final double radius;
 
-    // Default constructor for simple enemy definitions
     EnemyType(double hp, double atk, double speed, Color color, double radius) {
         this(hp, atk, 1, GameEntity.AttackType.PHYSICAL, 1.0, 0.0, true, 0.0, speed, color, radius);
     }
 
-    // Full constructor for advanced enemy definitions
     EnemyType(
         double hp, double atk, int blockCount, GameEntity.AttackType attackType, 
         double attackInterval, double resistance, boolean isGround, double defense, 

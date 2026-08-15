@@ -55,7 +55,6 @@ public class SpawnEntry {
         this.statMultiplier = statMultiplier <= 0 ? 1.0 : statMultiplier;
     }
 
-    /** Convenience factory for the common "just spawn N seconds in" case. */
     public static SpawnEntry of(EnemyType type, double delaySeconds) {
         return new SpawnEntry(type, delaySeconds);
     }

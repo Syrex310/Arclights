@@ -20,7 +20,6 @@ import javafx.scene.paint.Color;
 public final class LoadingScreen {
 
     private LoadingScreen() {
-        // static-only utility class
     }
 
     public interface LoadCallbacks {
@@ -74,9 +73,6 @@ public final class LoadingScreen {
 
         preloadTask.setOnSucceeded(e -> callbacks.onLoadComplete());
         preloadTask.setOnFailed(e -> {
-            // Don't strand the player on the loading screen if a sprite is
-            // missing/unreadable - fall back to the main menu and let the
-            // normal in-game lazy loading (with its circle fallback) take over.
             Throwable ex = preloadTask.getException();
             if (ex != null) {
                 ex.printStackTrace();

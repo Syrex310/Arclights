@@ -26,9 +26,6 @@ public class OperatorDeploymentBar {
     private final HBox cardsDeck;
     private final Label dpLabel;
 
-    // Operator id -> its card, built fresh from PlayerProgress every time
-    // this bar is constructed (i.e. every time a stage is entered), so any
-    // operator recruited in the shop shows up automatically.
     private final Map<String, Pane> cardsByOperatorId = new LinkedHashMap<>();
 
     public OperatorDeploymentBar(String levelName) {
@@ -100,7 +97,6 @@ public class OperatorDeploymentBar {
             portrait.setFitHeight(CARD_SIZE - 8);
             portrait.setPreserveRatio(true);
         } else {
-            // Fallback square color block if the portrait art doesn't exist yet
             Rectangle placeholder = new Rectangle(CARD_SIZE - 10, CARD_SIZE - 10, def.cardColor);
             cardRoot.getChildren().add(placeholder);
         }

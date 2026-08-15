@@ -14,7 +14,6 @@ public final class SpriteSizing {
     public static final double ENEMY_SCALE = 2.15;
 
     private SpriteSizing() {
-        // static-only utility class
     }
 
     public static double operatorSize(double tileWidth, double tileHeight) {

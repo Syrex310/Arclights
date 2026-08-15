@@ -84,17 +84,12 @@ public class DeploymentManager {
         this.entityLayer = entityLayer;
         this.selectionOverlay = new OperatorSelectionOverlay(root, UILoader.WINDOW_HEIGHT);
 
-        // Clicking anywhere that isn't the selection overlay itself (diamond,
-        // retreat/skill squares, stat panel) dismisses the current selection.
-        // Registered as a filter (capturing phase) so it never interferes
-        // with the normal press/drag/release handlers wired in InputController.
         this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
             if (selectionOverlay.isVisible() && !selectionOverlay.isPartOfOverlay((javafx.scene.Node) event.getTarget())) {
                 selectionOverlay.hide();
             }
         });
 
-        // Default fallbacks in case layout info isn't passed immediately
         this.tileWidth = 62;
         this.tileHeight = 62;
         this.paddingX = 2;
@@ -164,7 +159,6 @@ public class DeploymentManager {
         dragGhost.setCenterX(x);
         dragGhost.setCenterY(y);
 
-        // Convert dynamic mouse position back to row/col grid coordinates
         int col = (int) Math.floor((x - offsetX) / (tileWidth + paddingX));
         int row = (int) Math.floor((y - offsetY) / (tileHeight + paddingY));
 
@@ -172,7 +166,6 @@ public class DeploymentManager {
 
         OperatorCatalog.Definition def = OperatorCatalog.get(draggingOperatorId);
 
-        // If hovering over a valid tile space, show temporary range preview
         if (def != null && row >= 0 && row < gameMap.getRows() && col >= 0 && col < gameMap.getCols()) {
             Tile tile = gameMap.getTile(row, col);
             if (canPlaceOn(tile, def)) {
@@ -335,7 +328,6 @@ public class DeploymentManager {
         finalOpSprite = null;
         finalDirectionArrow = null;
         clearRangePreview();
-        System.out.println("Deployment bound locked successfully.");
     }
 
     /**

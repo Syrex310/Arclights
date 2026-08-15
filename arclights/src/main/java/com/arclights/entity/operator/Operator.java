@@ -31,11 +31,6 @@ public class Operator extends GameEntity {
 
     protected List<Point2D> relativeRangeOffsets = new ArrayList<>();
 
-    // =========================================================
-    // Constructor
-    // =========================================================
-
-    // Constructor receives true pixel positions directly from DeploymentManager
     public Operator(
             int gridX,
             int gridY,
@@ -77,7 +72,6 @@ public class Operator extends GameEntity {
         this.deployCost = deployCost;
     }
 
-    // Overloaded constructor for fallback / default pixel calculation
     public Operator(
             double gridX,
             double gridY,
@@ -108,10 +102,6 @@ public class Operator extends GameEntity {
         );
     }
 
-    // =========================================================
-    // Deployment
-    // =========================================================
-
     /**
      * DP cost required to deploy this operator,
      * mirroring Arknights' deployment-point system.
@@ -119,10 +109,6 @@ public class Operator extends GameEntity {
     public int getDeployCost() {
         return deployCost;
     }
-
-    // =========================================================
-    // Direction
-    // =========================================================
 
     public void setFacing(Direction facing) {
         this.facing = facing;
@@ -132,10 +118,6 @@ public class Operator extends GameEntity {
         return facing;
     }
 
-    // =========================================================
-    // Grid
-    // =========================================================
-
     public int getGridX() {
         return gridX;
     }
@@ -143,10 +125,6 @@ public class Operator extends GameEntity {
     public int getGridY() {
         return gridY;
     }
-
-    // =========================================================
-    // Range
-    // =========================================================
 
     public List<Point2D> getAbsoluteRangeTiles() {
 
@@ -160,7 +138,6 @@ public class Operator extends GameEntity {
             double rotatedX = dx;
             double rotatedY = dy;
 
-            // Correct 2D rotation matrix relative to EAST (0 degrees)
             switch (facing) {
 
                 case NORTH:
@@ -196,10 +173,6 @@ public class Operator extends GameEntity {
         return absoluteTiles;
     }
 
-    // =========================================================
-    // Blocking
-    // =========================================================
-
     public int getRemainingBlockCount() {
 
         int usedBlock = 0;
@@ -214,10 +187,6 @@ public class Operator extends GameEntity {
         );
     }
 
-    // =========================================================
-    // Update
-    // =========================================================
-
     public void update(List<Enemy> activeEnemies) {
         update(activeEnemies, java.util.Collections.emptyList());
     }
@@ -230,14 +199,9 @@ public class Operator extends GameEntity {
             List<Enemy> activeEnemies,
             List<Operator> allies) {
 
-        // Update skill first
         if (skill != null) {
             skill.update();
         }
-
-        // =====================================================
-        // Death cleanup
-        // =====================================================
 
         if (!isAlive()) {
 
@@ -251,14 +215,9 @@ public class Operator extends GameEntity {
             return;
         }
 
-        // Remove dead enemies from blocking list
         blockedEnemies.removeIf(
             enemy -> !enemy.isAlive()
         );
-
-        // =====================================================
-        // Blocking
-        // =====================================================
 
         if (isGround()) {
 
@@ -268,7 +227,6 @@ public class Operator extends GameEntity {
                     continue;
                 }
 
-                // Check if enemy is on the same tile
                 boolean isSameTile =
                     enemy.getCurrentGridX() == this.gridX
                     &&
@@ -297,10 +255,6 @@ public class Operator extends GameEntity {
             }
         }
 
-        // =====================================================
-        // Attack cooldown
-        // =====================================================
-
         if (attackCooldownTimer > 0) {
 
             attackCooldownTimer--;
@@ -311,17 +265,8 @@ public class Operator extends GameEntity {
         }
     }
 
-    // =========================================================
-    // Combat
-    // =========================================================
-
     /**
      * Executes this operator's per-cooldown action.
-     *
-     * Default behaviour:
-     *
-     * 1. Attack an enemy currently being blocked.
-     * 2. Otherwise find an enemy inside attack range.
      */
     protected void performAction(
             List<Enemy> activeEnemies,
@@ -329,7 +274,6 @@ public class Operator extends GameEntity {
 
         Enemy target = null;
 
-        // Prefer blocked enemy
         if (!blockedEnemies.isEmpty()) {
 
             target = blockedEnemies.get(0);
@@ -353,11 +297,7 @@ public class Operator extends GameEntity {
             );
 
             if (skill != null) {
-
-                // Offensive SP recovery
                 skill.onAttack();
-
-                // Consume NEXT_ATTACK skill if necessary
                 skill.consumeAttack();
             }
 
@@ -621,6 +561,5 @@ public class Operator extends GameEntity {
 
     @Override
     public void update() {
-        // Operator uses update(activeEnemies, allies)
     }
 }

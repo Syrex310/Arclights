@@ -156,11 +156,8 @@ public class App extends Application {
         MapConfig mapConfig = MapPresets.getConfigForLayout(levelLayout);
         GameMap gameMap = new GameMap(levelLayout, mapConfig);
 
-        MapRenderer.RenderResult layout = MapRenderer.renderMap(root, gameMap, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT); // 1280 x 645
+        MapRenderer.RenderResult layout = MapRenderer.renderMap(root, gameMap, UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
 
-        // Dedicated, depth-sorted layer for operator/enemy sprites, sitting
-        // right above the map tiles so entities lower on the map (larger Y)
-        // are drawn in front of entities higher up.
         EntityLayer entityLayer = new EntityLayer();
         root.getChildren().add(entityLayer.getPane());
 
@@ -191,6 +188,17 @@ public class App extends Application {
             showVictoryOverlay(stage, root, reward);
         });
 
+        Label livesLabel = new Label("\u2764 " + enemyManager.getLives());
+        livesLabel.setStyle(
+                "-fx-text-fill: #ff5252; -fx-font-weight: bold; -fx-font-size: 20px; " +
+                "-fx-background-color: rgba(0,0,0,0.55); -fx-background-radius: 10px; " +
+                "-fx-padding: 6 18 6 18;");
+        livesLabel.setLayoutY(12);
+        livesLabel.widthProperty().addListener((obs, oldW, newW) ->
+                livesLabel.setLayoutX((UILoader.WINDOW_WIDTH - newW.doubleValue()) / 2.0));
+        root.getChildren().add(livesLabel);
+        enemyManager.setOnLivesChanged(remaining -> livesLabel.setText("\u2764 " + remaining));
+
         Label statusLabel = new Label(
                 "Level: " + levelName + " | Drag & release to deploy");
         statusLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
@@ -215,11 +223,9 @@ public class App extends Application {
         controlDashboard.setStyle("-fx-background-color: #222222; -fx-padding: 15px; -fx-background-radius: 5px;");
         controlDashboard.setLayoutX(50);
         controlDashboard.setLayoutY(460);
-        //root.getChildren().add(controlDashboard);
 
         OperatorDeploymentBar deploymentBar = new OperatorDeploymentBar(levelName);
 
-        //Button exitBtn = new Button("QUIT OPERATION"); //btn_escape #7678
         Button exitBtn = UILoader.createImageButton("/com/arclights/ui/btn_escape #7678.png", 20, 20, 70, 70);
 
         exitBtn.setOnAction(e -> {
@@ -296,7 +302,7 @@ public class App extends Application {
         overlay.setMinSize(UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
         overlay.setStyle("-fx-background-color: rgba(10, 0, 0, 0.82); -fx-cursor: hand;");
 
-        Label defeatLabel = new Label("DEFEAT");
+        Label defeatLabel = new Label("MISSION FAILED");
         defeatLabel.setStyle(
             "-fx-text-fill: #dc3545; " +
             "-fx-font-size: 64px; " +
@@ -304,7 +310,7 @@ public class App extends Application {
             "-fx-font-weight: 900;"
         );
 
-        Label subLabel = new Label("The objective was overrun. Click anywhere to return to base.");
+        Label subLabel = new Label("The objective was overrun. Click anywhere to return");
         subLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 15px;");
 
         VBox messageBox = new VBox(15, defeatLabel, subLabel);
@@ -313,7 +319,7 @@ public class App extends Application {
         messageBox.setLayoutY((UILoader.WINDOW_HEIGHT / 2.0) - 60);
 
         overlay.getChildren().add(messageBox);
-        overlay.setOnMouseClicked(e -> showStageSelect(stage));
+        overlay.setOnMouseClicked(e -> {SoundManager.stopMusic();showStageSelect(stage);});
 
         root.getChildren().add(overlay);
     }
@@ -328,7 +334,8 @@ public class App extends Application {
      */
     private int grantStageClearReward(char[][] levelLayout, String levelName) {
         boolean rewardEligible = levelLayout == MapPresets.LEVEL_1_LAYOUT
-                || levelLayout == MapPresets.LEVEL_2_LAYOUT;
+                || levelLayout == MapPresets.LEVEL_2_LAYOUT
+                || levelLayout == MapPresets.LEVEL_3_LAYOUT;
 
         if (!rewardEligible) {
             return 0;
@@ -368,7 +375,7 @@ public class App extends Application {
         Label rewardLabel = new Label(rewardText);
         rewardLabel.setStyle("-fx-text-fill: #ffd54f; -fx-font-size: 20px; -fx-font-weight: bold;");
 
-        Label subLabel = new Label("Click anywhere to return to base.");
+        Label subLabel = new Label("Click anywhere to return");
         subLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 15px;");
 
         VBox messageBox = new VBox(12, victoryLabel, rewardLabel, subLabel);
@@ -377,7 +384,7 @@ public class App extends Application {
         messageBox.setLayoutY((UILoader.WINDOW_HEIGHT / 2.0) - 70);
 
         overlay.getChildren().add(messageBox);
-        overlay.setOnMouseClicked(e -> showStageSelect(stage));
+        overlay.setOnMouseClicked(e -> {SoundManager.stopMusic(); showStageSelect(stage);});
 
         root.getChildren().add(overlay);
     }

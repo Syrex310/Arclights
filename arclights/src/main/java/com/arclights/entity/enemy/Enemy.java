@@ -14,12 +14,10 @@ public class Enemy extends GameEntity {
     private int currentWaypointIndex;
     private boolean isBlocked = false;
 
-    // The operator currently blocking this enemy (null if not blocked)
     private Operator blockedByOperator;
     private int attackCooldownTimer = 0;
     private boolean attackTriggered = false;
 
-    // Track current grid column & row for clean operator targeting
     private int currentGridX;
     private int currentGridY;
 
@@ -62,21 +60,17 @@ public class Enemy extends GameEntity {
             return;
         }
 
-        // Get our current target checkpoint
         Point2D target = waypoints.get(currentWaypointIndex);
 
-        // Calculate distance to target waypoint
         double dx = target.getX() - getX();
         double dy = target.getY() - getY();
         double distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Snap to waypoint when close enough
         if (distance <= Math.max(speed, 2.0)) {
             setX(target.getX());
             setY(target.getY());
             currentWaypointIndex++;
         } else {
-            // Move smoothly toward the target waypoint using normalized velocity
             setX(getX() + (dx / distance) * speed);
             setY(getY() + (dy / distance) * speed);
         }
@@ -95,7 +89,6 @@ public class Enemy extends GameEntity {
         } else {
             blockedByOperator.takeDamage(getAtk(), getAttackType());
             attackTriggered = true;
-            System.out.println("Enemy attacked operator! Operator HP: " + blockedByOperator.getHp());
             attackCooldownTimer = (int) getAttackInterval();
         }
     }
@@ -115,19 +108,15 @@ public class Enemy extends GameEntity {
         this.currentGridY = (int) Math.floor((getY() - offsetY) / (tileHeight + paddingY));
     }
 
-    // Grid Location Getters for Operator Range Checks
     public int getCurrentGridX() { return currentGridX; }
     public int getCurrentGridY() { return currentGridY; }
 
-    // Getters and Setters for Enemy
     public boolean isBlocked() { return isBlocked; }
     public void setBlocked(boolean blocked) { this.isBlocked = blocked; }
 
     public Operator getBlockedBy() { return blockedByOperator; }
     public void setBlockedBy(Operator operator) {
         this.blockedByOperator = operator;
-        // Reset the cooldown so a newly-blocking operator isn't hit instantly
-        // by leftover cooldown state from a previous blocker.
         if (operator == null) {
             attackCooldownTimer = 0;
         }

@@ -51,10 +51,6 @@ public class OperatorSkill {
     private boolean active;
     private boolean nextAttackPending;
 
-    // =========================================================
-    // Constructors
-    // =========================================================
-
     /**
      * Basic constructor.
      */
@@ -136,8 +132,6 @@ public class OperatorSkill {
     }
 
     /**
-     * Full constructor.
-     *
      * @param activeAtkPercent
      *        ATK percentage bonus while the skill is active.
      *
@@ -185,10 +179,6 @@ public class OperatorSkill {
         this.autoCast = autoCast;
     }
 
-    // =========================================================
-    // Update
-    // =========================================================
-
     /** Called once per game tick. */
     public void update() {
 
@@ -225,10 +215,6 @@ public class OperatorSkill {
         }
     }
 
-    // =========================================================
-    // SP
-    // =========================================================
-
     /** Called after a successful operator attack. */
     public void onAttack() {
 
@@ -244,10 +230,6 @@ public class OperatorSkill {
             currentSP + Math.max(0, amount)
         );
     }
-
-    // =========================================================
-    // Activation
-    // =========================================================
 
     public boolean activate() {
 
@@ -274,10 +256,6 @@ public class OperatorSkill {
 
         return true;
     }
-
-    // =========================================================
-    // ATK
-    // =========================================================
 
     /**
      * Returns the ATK multiplier currently provided by the skill.
@@ -338,10 +316,6 @@ public class OperatorSkill {
         }
     }
 
-    // =========================================================
-    // DEFENSE
-    // =========================================================
-
     /**
      * Returns the DEF multiplier provided by the skill.
      *
@@ -369,23 +343,12 @@ public class OperatorSkill {
         return baseDefense * getDefenseMultiplier();
     }
 
-    // =========================================================
-    // Legacy / Damage Modification
-    // =========================================================
-
     /**
      * Keeps custom damage effects available.
      *
-     * IMPORTANT:
-     * Normal ATK bonuses should NOT be implemented here anymore.
-     *
-     * This method is now intended for special effects such as:
-     *
-     * - true damage
-     * - damage type conversion
-     * - bonus damage against specific enemies
-     * - execute effects
-     * - etc.
+     * This method is intended for special effects such as true damage,
+     * damage type conversion, bonus damage against specific enemies,
+     * or execute effects.
      */
     public double modifyAttackDamage(double baseDamage) {
 
@@ -397,10 +360,6 @@ public class OperatorSkill {
 
         return result;
     }
-
-    // =========================================================
-    // Getters
-    // =========================================================
 
     public String getName() {
         return name;

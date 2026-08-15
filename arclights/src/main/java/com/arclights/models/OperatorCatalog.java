@@ -61,10 +61,6 @@ public final class OperatorCatalog {
         }
     }
 
-    // The two operators every player starts with, regardless of shop
-    // purchases (see PlayerProgress.ensureStarterOperators). Kept so
-    // existing battles/stages that assumed a free Sniper + Defender keep
-    // working exactly as before.
     public static final String[] STARTER_OPERATOR_IDS = {
         "placeholder_operator_1",
         "placeholder_operator_2"
@@ -128,7 +124,6 @@ public final class OperatorCatalog {
     }
 
     private OperatorCatalog() {
-        // static-only utility class
     }
 
     /** Looks up a definition by its save/shop id, or null if unknown. */

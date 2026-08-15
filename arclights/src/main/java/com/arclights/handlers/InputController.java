@@ -25,7 +25,6 @@ public class InputController {
      *                      currently owns (see OperatorDeploymentBar).
      */
     public void attachInputHandlers(Pane root, Map<String, Pane> operatorCards) {
-        // 1. Initial press hooks: one handler per currently-owned operator's card
         for (Map.Entry<String, Pane> entry : operatorCards.entrySet()) {
             String operatorId = entry.getKey();
             Pane card = entry.getValue();
@@ -37,14 +36,12 @@ public class InputController {
             });
         }
 
-        // Capture initial click point when player begins Phase 2 (Direction swipe)
         root.setOnMousePressed(event -> {
             if (deploymentManager.getCurrentState() == DeploymentManager.SelectionState.SELECTING_DIRECTION) {
                 deploymentManager.setDirectionDragStart(event.getX(), event.getY());
             }
         });
 
-        // 2. Continuous Drag processing
         root.setOnMouseDragged(event -> {
             DeploymentManager.SelectionState state = deploymentManager.getCurrentState();
             if (state == DeploymentManager.SelectionState.DRAGGING) {
@@ -54,7 +51,6 @@ public class InputController {
             }
         });
 
-        // 3. Release drop processing configurations
         root.setOnMouseReleased(event -> {
             DeploymentManager.SelectionState state = deploymentManager.getCurrentState();
             if (state == DeploymentManager.SelectionState.DRAGGING) {

@@ -13,28 +13,15 @@ public final class SoundManager {
     
     private static final String SOUND_PATH = "/sounds/";
 
-    // =========================================================
-    // Volume
-    // =========================================================
-
     private static double musicVolume = 0.35;
     private static double sfxVolume = 0.65;
 
-    // =========================================================
-    // Background music
-    // =========================================================
-
     private static MediaPlayer currentMusic;
 
-    // Keep active SFX players alive until they finish.
     private static final List<MediaPlayer> activeSfx = new ArrayList<>();
 
     private SoundManager() {
     }
-
-    // =========================================================
-    // Background Music
-    // =========================================================
 
     public static void playMenuMusic() {
         playMusic("bgm_menu.mp3");
@@ -46,12 +33,10 @@ public final class SoundManager {
 
     public static void playMusic(String fileName) {
 
-        // Same music is already playing -> do nothing.
         if (currentMusic != null
                 && currentMusicFile != null
                 && currentMusicFile.equals(fileName)) {
 
-            // Make sure it is actually playing.
             currentMusic.play();
             return;
         }
@@ -129,10 +114,6 @@ public final class SoundManager {
         );
     }
 
-    // =========================================================
-    // Sound Effects
-    // =========================================================
-
     public static void playDeploySound() {
         playSfx("sfx_deploy.wav");
     }
@@ -154,11 +135,13 @@ public final class SoundManager {
     }
 
     public static void playStageClearSound() {
-        playSfx("sfx_stage_clear.mp3");
+        stopMusic();
+        playMusic("stage_clear.mp3");
     }
 
     public static void playDefeatSound() {
-        playSfx("sfx_defeat.mp3");
+        stopMusic();
+        playMusic("defeat.mp3");
     }
 
     /**
@@ -214,10 +197,6 @@ public final class SoundManager {
         }
     }
 
-    // =========================================================
-    // Volume
-    // =========================================================
-
     public static void setMusicVolume(double volume) {
         musicVolume = clamp(volume);
 
@@ -241,10 +220,6 @@ public final class SoundManager {
     private static double clamp(double value) {
         return Math.max(0.0, Math.min(1.0, value));
     }
-
-    // =========================================================
-    // Shutdown
-    // =========================================================
 
     public static void shutdown() {
 

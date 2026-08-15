@@ -58,7 +58,6 @@ public class Medic extends Operator {
         target.setHp(Math.min(target.getMaxHp(), target.getHp() + healAmount));
 
         markAttackTriggered();
-        System.out.println("Medic healed ally! Heal: " + healAmount + " | Ally HP: " + target.getHp());
         resetAttackCooldown();
     }
 

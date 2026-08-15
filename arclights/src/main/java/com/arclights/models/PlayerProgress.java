@@ -28,9 +28,6 @@ public class PlayerProgress {
     private static final Path SAVE_DIR = Paths.get(System.getProperty("user.home"), ".arclights");
     private static final Path SAVE_FILE = SAVE_DIR.resolve("save.properties");
 
-    // Stage names (used as save keys) are joined with this delimiter when
-    // written to the properties file. None of the current stage display
-    // names ("1-1 Main Corridor", etc.) contain it.
     private static final String CLEARED_STAGES_DELIMITER = "|";
     private static final String OWNED_OPERATORS_DELIMITER = "|";
 
@@ -44,7 +41,6 @@ public class PlayerProgress {
     }
 
     private PlayerProgress() {
-        // static-only utility class
     }
 
     public static IntegerProperty crystalsProperty() { return crystals; }

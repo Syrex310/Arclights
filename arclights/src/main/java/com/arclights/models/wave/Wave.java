@@ -19,7 +19,7 @@ import java.util.List;
 public class Wave {
     private final double startDelaySeconds;
     private final List<SpawnEntry> spawns;
-    private final String label; // optional, for debugging/UI ("Wave 1", etc.)
+    private final String label;
 
     public Wave(double startDelaySeconds, List<SpawnEntry> spawns) {
         this(startDelaySeconds, spawns, null);
