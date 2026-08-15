@@ -219,36 +219,9 @@ public class App extends Application {
 
         OperatorDeploymentBar deploymentBar = new OperatorDeploymentBar(levelName);
 
-        Button exitBtn = new Button("QUIT OPERATION");
-        exitBtn.setStyle(
-            "-fx-background-color: rgba(220, 53, 69, 0.15); " +
-            "-fx-text-fill: #dc3545; " +
-            "-fx-border-color: #dc3545; " +
-            "-fx-border-width: 1px; " +
-            "-fx-font-weight: bold; " +
-            "-fx-font-size: 12px; " +
-            "-fx-cursor: hand;"
-        );
-        exitBtn.setPrefSize(140, 35);
-        exitBtn.setLayoutX(600);
-        exitBtn.setLayoutY(50);
-        exitBtn.setOnMouseEntered(e -> exitBtn.setStyle(
-            "-fx-background-color: #dc3545; " +
-            "-fx-text-fill: #ffffff; " +
-            "-fx-border-color: #ffffff; " +
-            "-fx-font-weight: bold; " +
-            "-fx-font-size: 12px; " +
-            "-fx-cursor: hand;"
-        ));
-        exitBtn.setOnMouseExited(e -> exitBtn.setStyle(
-            "-fx-background-color: rgba(220, 53, 69, 0.15); " +
-            "-fx-text-fill: #dc3545; " +
-            "-fx-border-color: #dc3545; " +
-            "-fx-border-width: 1px; " +
-            "-fx-font-weight: bold; " +
-            "-fx-font-size: 12px; " +
-            "-fx-cursor: hand;"
-        ));
+        //Button exitBtn = new Button("QUIT OPERATION"); //btn_escape #7678
+        Button exitBtn = UILoader.createImageButton("/com/arclights/ui/btn_escape #7678.png", 20, 20, 70, 70);
+
         exitBtn.setOnAction(e -> {
             if (gameLoop != null) {
                 gameLoop.stop();
@@ -256,7 +229,15 @@ public class App extends Application {
             showStageSelect(stage);
         });
 
-        root.getChildren().addAll(deploymentBar.getRoot(), exitBtn);
+        Button pauseBtn = UILoader.createImageButton("/com/arclights/ui/btn_pause #7127.png", UILoader.WINDOW_WIDTH - 90, 20, 90, 70);
+        Button contBtn = UILoader.createImageButton("/com/arclights/ui/btn_play.png", UILoader.WINDOW_WIDTH - 165, 20, 90, 70);
+        pauseBtn.setOnAction(e -> {
+            deploymentManager.setGameSpeedMultiplier(0);
+        });
+        contBtn.setOnAction(e -> {
+            deploymentManager.setGameSpeedMultiplier(1);
+        });
+        root.getChildren().addAll(deploymentBar.getRoot(), exitBtn, pauseBtn, contBtn);
 
         InputController inputController = new InputController(deploymentManager, gameMap);
         inputController.attachInputHandlers(

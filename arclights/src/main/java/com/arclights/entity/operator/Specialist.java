@@ -16,7 +16,7 @@ public class Specialist extends Operator {
             "Execution Mode",
             SkillRecoveryType.OFFENSIVE,
             SkillActivationType.DURATION,
-            1,
+            0,
             1,
             0,
             1,

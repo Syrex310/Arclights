@@ -27,6 +27,8 @@ import javafx.scene.shape.Rectangle;
 
 public class DeploymentManager {
     public enum SelectionState { NONE, DRAGGING, SELECTING_DIRECTION }
+    public double gameSpeed = 1.0;
+    private double baseGameSpeed = 1.0;
 
     // Deployment Points (DP): starting pool, hard cap, and passive regen rate.
     // 1 DP is regenerated per second of game time. Since DeploymentManager.update()
@@ -431,7 +433,12 @@ public class DeploymentManager {
             currentState == SelectionState.SELECTING_DIRECTION) {
             return 0.2;
         }
-        return 1.0;
+        return baseGameSpeed;
+    }
+    
+    public void setGameSpeedMultiplier(double num) {
+        this.baseGameSpeed = num;
+        this.gameSpeed = num;
     }
 
     public void update(List<Enemy> activeEnemies) {

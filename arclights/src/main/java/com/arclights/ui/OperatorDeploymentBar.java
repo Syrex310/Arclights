@@ -8,13 +8,13 @@ import com.arclights.models.PlayerProgress;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -40,7 +40,7 @@ public class OperatorDeploymentBar {
 
         dpLabel = new Label("DP: 0 / 0");
         dpLabel.setStyle(
-            "-fx-text-fill: #ffd54f; " +
+            "-fx-text-fill: #ffffff; " +
             "-fx-font-weight: bold; " +
             "-fx-font-size: 16px; " +
             "-fx-background-color: rgba(0, 0, 0, 0.55); " +
@@ -48,7 +48,7 @@ public class OperatorDeploymentBar {
         );
         dpLabel.setPadding(new Insets(0, 0, 4, 0));
         infoBox.getChildren().add(dpLabel);
-        infoBox.setAlignment(Pos.BOTTOM_LEFT);
+        infoBox.setAlignment(Pos.BOTTOM_RIGHT);
 
         cardsDeck = new HBox();
         cardsDeck.setAlignment(Pos.BOTTOM_RIGHT);
@@ -77,7 +77,7 @@ public class OperatorDeploymentBar {
         }
 
         int cardCount = Math.max(1, cardsByOperatorId.size());
-        rootContainer.setLayoutX(UILoader.WINDOW_WIDTH - CARD_SIZE * cardCount);
+        rootContainer.setLayoutX(UILoader.WINDOW_WIDTH - CARD_SIZE * cardCount - 1 * cardCount);
     }
 
     private Pane createOperatorCard(OperatorCatalog.Definition def) {
@@ -107,7 +107,7 @@ public class OperatorDeploymentBar {
 
         Label costLabel = new Label(String.valueOf(def.deployCost));
         costLabel.setStyle(
-            "-fx-text-fill: #ffd54f; " +
+            "-fx-text-fill: #ffffff; " +
             "-fx-font-weight: bold; " +
             "-fx-font-size: 13px; " +
             "-fx-background-color: rgba(0, 0, 0, 0.65); " +

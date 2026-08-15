@@ -111,13 +111,19 @@ public final class SoundManager {
     }
 
     public static void installMenuClickSound(Scene scene) {
-
         scene.addEventFilter(
-            javafx.scene.input.MouseEvent.MOUSE_CLICKED,
+            javafx.scene.input.MouseEvent.MOUSE_PRESSED,
             event -> {
-
-                if (event.getTarget() instanceof javafx.scene.control.Button) {
-                    playMenuClickSound();
+                if (event.getTarget() instanceof javafx.scene.Node) {
+                    javafx.scene.Node node = (javafx.scene.Node) event.getTarget();
+                    
+                    while (node != null) {
+                        if (node instanceof javafx.scene.control.Button) {
+                            playMenuClickSound();
+                            break;
+                        }
+                        node = node.getParent();
+                    }
                 }
             }
         );
@@ -128,23 +134,23 @@ public final class SoundManager {
     // =========================================================
 
     public static void playDeploySound() {
-        playSfx("sfx_deploy.mp3");
+        playSfx("sfx_deploy.wav");
     }
 
     public static void playOperatorDeathSound() {
-        playSfx("sfx_operator_death.mp3");
+        playSfx("sfx_operator_death.wav");
     }
 
     public static void playSkillSound() {
-        playSfx("sfx_skill.mp3");
+        playSfx("sfx_skill.wav");
     }
 
     public static void playMenuClickSound() {
-        playSfx("sfx_menu_click.mp3");
+        playSfx("sfx_menu_click.wav");
     }
 
     public static void playRetreatSound() {
-        playSfx("sfx_retreat.mp3");
+        playSfx("sfx_retreat.wav");
     }
 
     public static void playStageClearSound() {

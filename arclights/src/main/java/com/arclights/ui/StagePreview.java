@@ -23,7 +23,7 @@ public class StagePreview {
         root.setPrefSize(UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
 
         // Standardized Utilities
-        UILoader.loadBackground(root, "/com/arclights/background.png", Color.web("#0d0f12"));
+        UILoader.loadBackground(root, "/com/arclights/background2.png", Color.web("#0d0f12"));
         UILoader.addTintOverlay(root, 0.80);
         UILoader.addPageHeader(root, "TERMINAL", "SELECT OPERATIONS");
         

@@ -6,14 +6,25 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 public class ShopMenu {
+
+    private static final String[] OPERATOR_PORTRAITS = {
+        "/com/arclights/char/char_124_kroos_sale#14 #15005.png",
+        "/com/arclights/char/char_122_beagle_boc#1 #15657.png",
+        "/com/arclights/char/char_180_amgoat_summer#5 #15978.png",
+        "/com/arclights/char/char_120_hibisc_nian#1 #15736.png",
+        "/com/arclights/char/char_017_huang_witch#5 #14843.png",
+        "/com/arclights/char/char_144_red_summer#6 #16091.png",
+        "/com/arclights/char/char_1036_fang2_snow#8 #15485.png",
+        "/com/arclights/char/char_1012_skadi2_boc#4 #15713.png"
+    };
 
     public interface ShopCallbacks {
         void onBackToMenu();
@@ -21,21 +32,21 @@ public class ShopMenu {
     }
 
     private static final OperatorOffer[] OFFERS = {
-        new OperatorOffer("placeholder_operator_1", "PLACEHOLDER 01", "SNIPER", 0),
-        new OperatorOffer("placeholder_operator_2", "PLACEHOLDER 02", "DEFENDER", 0),
-        new OperatorOffer("placeholder_operator_3", "PLACEHOLDER 03", "CASTER", 1000),
-        new OperatorOffer("placeholder_operator_4", "PLACEHOLDER 04", "MEDIC", 1250),
-        new OperatorOffer("placeholder_operator_5", "PLACEHOLDER 05", "GUARD", 1500),
-        new OperatorOffer("placeholder_operator_6", "PLACEHOLDER 06", "SPECIALIST", 1750),
-        new OperatorOffer("placeholder_operator_7", "PLACEHOLDER 07", "VANGUARD", 2000),
-        new OperatorOffer("placeholder_operator_8", "PLACEHOLDER 08", "SUPPORTER", 2500)
+        new OperatorOffer("placeholder_operator_1", "Kroos", "SNIPER", 0, "/com/arclights/char/char_124_kroos_sale#14 #15005.png"),
+        new OperatorOffer("placeholder_operator_2", "Beagle", "DEFENDER", 0, "/com/arclights/char/char_122_beagle_boc#1 #15657.png"),
+        new OperatorOffer("placeholder_operator_7", "Fang", "VANGUARD", 500, "/com/arclights/char/char_1036_fang2_snow#8 #15485.png"),
+        new OperatorOffer("placeholder_operator_3", "Eyjafjalla", "CASTER", 1000, "/com/arclights/char/char_180_amgoat_summer#5 #15978.png"),
+        new OperatorOffer("placeholder_operator_4", "Hibicus", "MEDIC", 1250, "/com/arclights/char/char_120_hibisc_nian#1 #15736.png"),
+        new OperatorOffer("placeholder_operator_5", "Blaze", "GUARD", 1500, "/com/arclights/char/char_017_huang_witch#5 #14843.png"),
+        new OperatorOffer("placeholder_operator_6", "Projekt Red", "SPECIALIST", 1750, "/com/arclights/char/char_1036_fang2_snow#8 #15485.png"),
+        new OperatorOffer("placeholder_operator_8", "Skadi", "SUPPORTER", 2000, "/com/arclights/char/char_1012_skadi2_boc#4 #15713.png")
     };
 
     public static Scene createScene(Runnable onBackToMenu, Runnable onPurchaseComplete) {
         Pane root = new Pane();
         root.setPrefSize(UILoader.WINDOW_WIDTH, UILoader.WINDOW_HEIGHT);
 
-        UILoader.loadBackground(root, "/com/arclights/background.png", Color.web("#0d0f12"));
+        UILoader.loadBackground(root, "/com/arclights/background2.png", Color.web("#0d0f12"));
         UILoader.addTintOverlay(root, 0.86);
         UILoader.addPageHeader(root, "OPERATOR SHOP", "RECRUIT NEW OPERATORS");
 
@@ -51,7 +62,7 @@ public class ShopMenu {
             "-fx-background-color: rgba(0, 0, 0, 0.55); -fx-background-radius: 6px; " +
             "-fx-padding: 8px 14px;"
         );
-        crystalLabel.setLayoutX(1030);
+        crystalLabel.setLayoutX(1100);
         crystalLabel.setLayoutY(38);
         root.getChildren().add(crystalLabel);
 
@@ -93,7 +104,8 @@ public class ShopMenu {
             "-fx-border-radius: 5px; -fx-padding: 15px;"
         );
 
-        Rectangle icon = new Rectangle(55, 55, Color.web("#555b66"));
+        //Rectangle icon = new Rectangle(55, 55, Color.web("#555b66"));
+        ImageView icon = UILoader.createImageView(offer.icon_path, 0, 0, 55, 55);
 
         Label name = new Label(offer.name);
         name.setStyle("-fx-text-fill: #ffffff; -fx-font-size: 14px; -fx-font-weight: bold;");
@@ -135,12 +147,14 @@ public class ShopMenu {
         final String name;
         final String type;
         final int cost;
+        final String icon_path;
 
-        OperatorOffer(String id, String name, String type, int cost) {
+        OperatorOffer(String id, String name, String type, int cost, String icon_path) {
             this.id = id;
             this.name = name;
             this.type = type;
             this.cost = cost;
+            this.icon_path = icon_path;
         }
     }
 }

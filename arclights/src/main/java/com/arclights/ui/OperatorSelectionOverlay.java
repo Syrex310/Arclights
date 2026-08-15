@@ -19,24 +19,13 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 
 /**
- * Arknights-style "operator selected" UI. Clicking a deployed operator's
- * sprite shows a faint diamond indicator anchored to it, with a retreat
- * square glued to its upper-left edge and a skill square (with an SP fill
- * bar) glued to its lower-right edge, plus a stat readout pinned to the
- * bottom-left corner of the screen. Clicking anywhere outside the diamond
- * (see {@link #isPartOfOverlay(Node)}) dismisses all of it.
- *
- * One instance is created per battle and reused for every operator the
- * player clicks - {@link #show} just re-points it at whichever operator was
- * clicked most recently.
+ * Arknights-style "operator selected" UI.
  */
 public class OperatorSelectionOverlay {
 
     private static final double SQUARE_SIZE = 26;
     private static final double PORTRAIT_SIZE = 190;
 
-    // Everything this overlay owns, grouped so outside-click detection is a
-    // single ancestry check (see isPartOfOverlay).
     private final Group overlayContainer = new Group();
 
     // --- Diamond + retreat/skill squares, anchored to the operator ---
@@ -94,7 +83,6 @@ public class OperatorSelectionOverlay {
             "-fx-cursor: hand;"
         );
 
-        // Simple downward "withdraw" arrow.
         Polygon arrow = new Polygon(
             -5.0, -4.0,
              5.0, -4.0,
@@ -122,7 +110,6 @@ public class OperatorSelectionOverlay {
             "-fx-cursor: hand;"
         );
 
-        // SP fill bar - grows bottom-up as SP charges, like Arknights' skill button.
         skillFill.setWidth(SQUARE_SIZE - 3);
         skillFill.setHeight(0);
         skillFill.setFill(Color.rgb(255, 200, 90, 0.75));
@@ -134,18 +121,17 @@ public class OperatorSelectionOverlay {
 
         skillSquare.getChildren().addAll(skillFill, skillSpLabel);
         skillSquare.setOnMouseClicked(event -> {
-
             if (selectedOperator != null) {
-
-                selectedOperator.activateSkill();
-
-                if (selectedOperator.activateSkill()) {
-                    SoundManager.playSkillSound();
+                OperatorSkill skill = selectedOperator.getSkill();
+                
+                if (skill != null && skill.isReady() && !skill.isActive()) {
+                    boolean activated = selectedOperator.activateSkill();
+                    if (activated) {
+                        SoundManager.playSkillSound();
+                    }
+                    refresh();
                 }
-
-                refresh();
             }
-
             event.consume();
         });
         skillSquare.setOnMouseEntered(e -> skillSquare.setOpacity(0.85));
@@ -174,10 +160,6 @@ public class OperatorSelectionOverlay {
         portraitFallbackLabel.setLayoutX(10);
         portraitFallbackLabel.setLayoutY(PORTRAIT_SIZE - 34);
 
-        // Light overlay box behind the stat numbers so the operator art
-        // underneath still reads through it. VBox (unlike a plain Pane)
-        // actually honors -fx-padding when laying out its children, and
-        // auto-sizes to its content, so it hugs the text neatly.
         String statStyle = "-fx-text-fill: #f0f0f0; -fx-font-size: 11px; -fx-font-weight: bold;";
         nameLabel.setStyle("-fx-text-fill: #ffcc66; -fx-font-size: 12px; -fx-font-weight: bold;");
         hpLabel.setStyle(statStyle);
@@ -200,7 +182,6 @@ public class OperatorSelectionOverlay {
         statPanel.getChildren().addAll(portraitFallback, portraitView, portraitFallbackLabel, statsBox);
     }
 
-    /** Re-anchors and reveals the overlay for the given deployed operator. */
     public void show(Operator operator, OperatorCatalog.Definition definition,
                       double tileWidth, double tileHeight, Runnable onRetreat) {
         this.selectedOperator = operator;
@@ -220,7 +201,6 @@ public class OperatorSelectionOverlay {
         refresh();
     }
 
-    /** Hides every part of the overlay and forgets the current selection. */
     public void hide() {
         overlayContainer.setVisible(false);
         indicatorGroup.translateXProperty().unbind();
@@ -237,7 +217,6 @@ public class OperatorSelectionOverlay {
         return selectedOperator;
     }
 
-    /** True if the given click target is anywhere inside this overlay (diamond, squares, or stat panel). */
     public boolean isPartOfOverlay(Node target) {
         Node n = target;
         while (n != null) {
@@ -247,7 +226,6 @@ public class OperatorSelectionOverlay {
         return false;
     }
 
-    /** Call once per simulation tick while an operator is selected: refreshes the SP bar and HP-driven state. */
     public void refresh() {
         if (selectedOperator == null || !overlayContainer.isVisible()) return;
 
@@ -255,6 +233,9 @@ public class OperatorSelectionOverlay {
             hide();
             return;
         }
+
+        atkLabel.setText("ATK  " + (int) selectedOperator.getEffectiveAtk());
+        defLabel.setText("DEF  " + (int) selectedOperator.getEffectiveDefense());
 
         OperatorSkill skill = selectedOperator.getSkill();
         if (skill != null) {
@@ -278,29 +259,26 @@ public class OperatorSelectionOverlay {
             -halfW, 0.0    // left
         );
 
-        // Retreat square glued to the top-left edge (midpoint of top/left vertices).
         retreatSquare.setLayoutX(-halfW / 2.0 - SQUARE_SIZE / 2.0);
         retreatSquare.setLayoutY(-halfH / 2.0 - SQUARE_SIZE / 2.0);
 
-        // Skill square glued to the bottom-right edge (midpoint of bottom/right vertices).
         skillSquare.setLayoutX(halfW / 2.0 - SQUARE_SIZE / 2.0);
         skillSquare.setLayoutY(halfH / 2.0 - SQUARE_SIZE / 2.0);
     }
 
     private void bindStats(Operator operator, OperatorCatalog.Definition definition) {
+        //cancel old binding
+        atkLabel.textProperty().unbind();
+        defLabel.textProperty().unbind();
+
         nameLabel.setText(definition != null ? definition.displayName : operator.getClass().getSimpleName());
 
         hpLabel.textProperty().bind(Bindings.createStringBinding(
             () -> "HP   " + (int) Math.ceil(operator.getHp()) + " / " + (int) operator.getMaxHp(),
             operator.hpProperty(), operator.maxHpProperty()));
 
-        atkLabel.textProperty().bind(Bindings.createStringBinding(
-            () -> "ATK  " + (int) operator.getAtk(),
-            operator.atkProperty()));
-
-        defLabel.textProperty().bind(Bindings.createStringBinding(
-            () -> "DEF  " + (int) operator.getDefense(),
-            operator.defenseProperty()));
+        atkLabel.setText("ATK  " + (int) operator.getEffectiveAtk());
+        defLabel.setText("DEF  " + (int) operator.getEffectiveDefense());
 
         resLabel.textProperty().bind(Bindings.createStringBinding(
             () -> "RES  " + (int) operator.getResistance() + "%",

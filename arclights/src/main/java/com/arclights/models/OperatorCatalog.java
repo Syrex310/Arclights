@@ -72,51 +72,51 @@ public final class OperatorCatalog {
 
     private static final Definition[] DEFINITIONS = {
         new Definition(
-            "placeholder_operator_1", "PLACEHOLDER 01", "SNIPER",
+            "placeholder_operator_1", "Kroos", "SNIPER",
             Sniper.DEPLOY_COST, Placement.RANGED,
             "/com/arclights/char/char_124_kroos_sale#14 #15005.png", Color.web("#4caf50"),
             (col, row) -> new Sniper(col, row)),
 
         new Definition(
-            "placeholder_operator_2", "PLACEHOLDER 02", "DEFENDER",
+            "placeholder_operator_2", "Beagle", "DEFENDER",
             Defender.DEPLOY_COST, Placement.MELEE,
             "/com/arclights/char/char_122_beagle_boc#1 #15657.png", Color.web("#2196f3"),
             (col, row) -> new Defender(col, row)),
 
         new Definition(
-            "placeholder_operator_3", "PLACEHOLDER 03", "CASTER",
+            "placeholder_operator_3", "Eyjafjalla", "CASTER",
             Caster.DEPLOY_COST, Placement.RANGED,
-            "/com/arclights/char/caster.png", Color.web("#9b59b6"),
+            "/com/arclights/char/char_180_amgoat_summer#5 #15978.png", Color.web("#9b59b6"),
             (col, row) -> new Caster(col, row)),
 
         new Definition(
-            "placeholder_operator_4", "PLACEHOLDER 04", "MEDIC",
+            "placeholder_operator_4", "Hibicus", "MEDIC",
             Medic.DEPLOY_COST, Placement.RANGED,
-            "/com/arclights/char/medic.png", Color.web("#2ecc71"),
+            "/com/arclights/char/char_120_hibisc_nian#1 #15736.png", Color.web("#2ecc71"),
             (col, row) -> new Medic(col, row)),
 
         new Definition(
-            "placeholder_operator_5", "PLACEHOLDER 05", "GUARD",
+            "placeholder_operator_5", "Blaze", "GUARD",
             Guard.DEPLOY_COST, Placement.MELEE,
-            "/com/arclights/char/guard.png", Color.web("#e67e22"),
+            "/com/arclights/char/char_017_huang_witch#5 #14843.png", Color.web("#e67e22"),
             (col, row) -> new Guard(col, row)),
 
         new Definition(
-            "placeholder_operator_6", "PLACEHOLDER 06", "SPECIALIST",
+            "placeholder_operator_6", "Projekt Red", "SPECIALIST",
             Specialist.DEPLOY_COST, Placement.MELEE,
-            "/com/arclights/char/specialist.png", Color.web("#f1c40f"),
+            "/com/arclights/char/char_144_red_summer#6 #16091.png", Color.web("#f1c40f"),
             (col, row) -> new Specialist(col, row)),
         
         new Definition(
-            "placeholder_operator_7", "PLACEHOLDER 07", "VANGUARD",
+            "placeholder_operator_7", "Fang", "VANGUARD",
             Vanguard.DEPLOY_COST, Placement.MELEE,
-            "/com/arclights/char/vanguard.png", Color.web("#3498db"),
+            "/com/arclights/char/char_1036_fang2_snow#8 #15485.png", Color.web("#3498db"),
             (col, row) -> new Vanguard(col, row)),
 
         new Definition(
-            "placeholder_operator_8", "PLACEHOLDER 08", "SUPPORTER",
+            "placeholder_operator_8", "Skadi", "SUPPORTER",
             Supporter.DEPLOY_COST, Placement.RANGED,
-            "/com/arclights/char/supporter.png", Color.web("#1abc9c"),
+            "/com/arclights/char/char_1012_skadi2_boc#4 #15713.png", Color.web("#1abc9c"),
             (col, row) -> new Supporter(col, row)),
     };
 

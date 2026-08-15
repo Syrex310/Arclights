@@ -340,59 +340,17 @@ public class Operator extends GameEntity {
         }
 
         if (target != null) {
-
-            // =================================================
-            // Effective ATK
-            // =================================================
-            //
-            // Base ATK:
-            //
-            //     getAtk()
-            //
-            // Skill ATK bonus:
-            //
-            //     skill.modifyAttack(...)
-            //
-            // Example:
-            //
-            //     Base ATK = 100
-            //     Skill = +50%
-            //     Effective ATK = 150
-            //
             double attack = getEffectiveAtk();
-
-            // Damage starts from effective ATK
             double damage = attack;
 
-            // =================================================
-            // Custom damage effects
-            // =================================================
-            //
-            // This is intentionally kept separate from ATK.
-            //
-            // For example:
-            //
-            //     +20% damage against boss
-            //     true damage
-            //     elemental damage
-            //     execute effects
-            //
             if (skill != null) {
                 damage = skill.modifyAttackDamage(damage);
             }
-
-            // =================================================
-            // Deal damage
-            // =================================================
 
             target.takeDamage(
                 damage,
                 getAttackType()
             );
-
-            // =================================================
-            // Skill attack handling
-            // =================================================
 
             if (skill != null) {
 
@@ -402,10 +360,6 @@ public class Operator extends GameEntity {
                 // Consume NEXT_ATTACK skill if necessary
                 skill.consumeAttack();
             }
-
-            // =================================================
-            // Animation
-            // =================================================
 
             markAttackTriggered();
 
@@ -420,14 +374,6 @@ public class Operator extends GameEntity {
         }
     }
 
-    /**
-     * Returns the operator's current effective ATK.
-     *
-     * Base ATK is stored in GameEntity.
-     *
-     * Skills can modify the effective ATK without
-     * changing the operator's permanent base ATK.
-     */
     public double getEffectiveAtk() {
 
         double atk = getAtk();
@@ -439,14 +385,6 @@ public class Operator extends GameEntity {
         return atk;
     }
 
-    /**
-     * Returns the operator's current effective DEF.
-     *
-     * Base DEF is stored in GameEntity.
-     *
-     * Skills can temporarily increase/decrease this value
-     * without changing the operator's permanent base DEF.
-     */
     public double getEffectiveDefense() {
 
         double defense = getDefense();
@@ -458,14 +396,6 @@ public class Operator extends GameEntity {
         return defense;
     }
 
-    /**
-     * Operator-specific damage handling.
-     *
-     * GameEntity normally uses getDefense() directly.
-     *
-     * We override it here so active skill DEF bonuses
-     * actually affect incoming physical damage.
-     */
     @Override
     public void takeDamage(
             double damage,
@@ -477,14 +407,8 @@ public class Operator extends GameEntity {
 
         double mitigation;
 
-        // =====================================================
-        // Physical damage
-        // =====================================================
-
         if (attackType == AttackType.PHYSICAL) {
 
-            // IMPORTANT:
-            // Use effective DEF instead of base DEF.
             mitigation = getEffectiveDefense();
 
             double remainingHp =
@@ -504,10 +428,6 @@ public class Operator extends GameEntity {
 
             return;
         }
-
-        // =====================================================
-        // Arts damage
-        // =====================================================
 
         if (attackType == AttackType.ARTS) {
 
@@ -530,30 +450,14 @@ public class Operator extends GameEntity {
         }
     }
 
-    // =========================================================
-    // Attack animation
-    // =========================================================
-
-    /**
-     * Signals to the animation controller that an
-     * attack/action animation should play.
-     */
     protected void markAttackTriggered() {
         attackTriggered = true;
     }
 
-    /**
-     * Resets the per-action cooldown back to the
-     * operator's full attack interval.
-     */
     protected void resetAttackCooldown() {
         attackCooldownTimer =
             (int) getAttackInterval();
     }
-
-    // =========================================================
-    // Skill
-    // =========================================================
 
     public void setSkill(OperatorSkill skill) {
         this.skill = skill;
@@ -563,27 +467,12 @@ public class Operator extends GameEntity {
         return skill;
     }
 
-    /**
-     * Activates the operator's skill if enough SP
-     * has been collected.
-     */
     public boolean activateSkill() {
 
         return skill != null
             && skill.activate();
     }
 
-    // =========================================================
-    // Retreat
-    // =========================================================
-
-    /**
-     * Pulls this operator off the field immediately.
-     *
-     * Releases enemies currently being blocked and
-     * marks the operator as dead so DeploymentManager
-     * can clean up its tile/sprite.
-     */
     public void retreat() {
 
         for (Enemy enemy : blockedEnemies) {
@@ -597,13 +486,6 @@ public class Operator extends GameEntity {
         setIsAlive(false);
     }
 
-    // =========================================================
-    // Attack animation trigger
-    // =========================================================
-
-    /**
-     * Returns true once when this operator performs an attack.
-     */
     public boolean consumeAttackTriggered() {
 
         boolean triggered = attackTriggered;
@@ -612,10 +494,6 @@ public class Operator extends GameEntity {
 
         return triggered;
     }
-
-    // =========================================================
-    // Target finding
-    // =========================================================
 
     private Enemy findTargetInGridRange(
             List<Enemy> activeEnemies) {
@@ -647,16 +525,6 @@ public class Operator extends GameEntity {
         return null;
     }
 
-    // =========================================================
-    // Healing
-    // =========================================================
-
-    /**
-     * Finds the most-injured ally (lowest HP%)
-     * standing on one of this operator's range tiles.
-     *
-     * Allies at full HP are never picked.
-     */
     protected Operator findHealTargetInGridRange(
             List<Operator> allies) {
 
@@ -706,10 +574,6 @@ public class Operator extends GameEntity {
 
         return best;
     }
-
-    // =========================================================
-    // GameEntity abstract update
-    // =========================================================
 
     @Override
     public void update() {
