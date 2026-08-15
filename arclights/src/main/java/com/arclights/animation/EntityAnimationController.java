@@ -31,6 +31,7 @@ public final class EntityAnimationController {
     private void loadAnimations() {
         String group = enemy ? "enemies" : "operators";
 
+        load(AnimationState.START, group, 1, false);
         load(AnimationState.IDLE, group, 1, true);
         load(AnimationState.WALK, group, 1, true);
         load(AnimationState.ATTACK, group, 1, false);
@@ -50,9 +51,28 @@ public final class EntityAnimationController {
         sprite.play(AnimationState.ATTACK);
     }
 
+    /**
+     * Plays the one-shot "start" animation, used right after an operator is
+     * deployed (once the player has finished choosing its facing direction).
+     * Faces the sprite the right way first, since the normal idle/walk logic
+     * that would otherwise do that is skipped while START is playing.
+     */
+    public void triggerStart() {
+        if (!enemy) {
+            Operator op = (Operator) entity;
+            sprite.setFacingWest(op.getFacing() == Operator.Direction.WEST);
+        }
+        sprite.play(AnimationState.START);
+    }
+
     public void update() {
         if (!entity.isAlive()) {
             sprite.play(AnimationState.DEATH);
+            sprite.update();
+            return;
+        }
+
+        if (sprite.getCurrentState() == AnimationState.START && !sprite.isCurrentAnimationFinished()) {
             sprite.update();
             return;
         }
@@ -62,11 +82,24 @@ public final class EntityAnimationController {
             if (sprite.getCurrentState() == AnimationState.ATTACK
                 && !sprite.isCurrentAnimationFinished()) {
                     sprite.play(AnimationState.ATTACK);
+                    if (enemy) {
+                        Enemy e = (Enemy) entity;
+                        e.setSpeed(0);
+                    }
                 }
             else {
-                sprite.play(AnimationState.IDLE);
+                if (enemy) {
+                    Enemy e = (Enemy) entity;
+                    boolean blockingState = e.isBlocked();
+                    sprite.play(blockingState ? AnimationState.IDLE : AnimationState.WALK);
+                    e.setSpeed(e.getDefaultSpeed());
+                    sprite.setFacingWest(false);
+                } else {
+                    Operator op = (Operator) entity;
+                    sprite.setFacingWest(op.getFacing() == Operator.Direction.WEST);
+                    sprite.play(AnimationState.IDLE);
+                }
             }
-            
         } else if (enemy) {
             Enemy e = (Enemy) entity;
             sprite.play(e.isBlocked() ? AnimationState.IDLE : AnimationState.WALK);

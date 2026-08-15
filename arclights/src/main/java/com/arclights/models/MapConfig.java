@@ -10,7 +10,6 @@ public class MapConfig {
     private double paddingY;
     private boolean autoCalculateTileSize;
 
-    // Fixed tile size configuration
     public MapConfig(String backgroundImagePath, double tileWidth, double tileHeight, double offsetX, double offsetY, double paddingX, double paddingY) {
         this.backgroundImagePath = backgroundImagePath;
         this.tileWidth = tileWidth;
@@ -31,7 +30,6 @@ public class MapConfig {
         this.autoCalculateTileSize = true;
     }
 
-    // fallback
     public static MapConfig defaultConfig(String bgPath) {
         return new MapConfig(bgPath, 0, 50, 2, 0); // 0 offsetX = auto-center horizontally
     }

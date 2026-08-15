@@ -57,8 +57,7 @@ public abstract class GameEntity {
         else if (attackType == AttackType.PHYSICAL) {
             remainingHp -= Math.max(damage - mitigation, 0);
         }
-        
-        // Prevent HP from dropping below 0
+
         remainingHp = Math.max(remainingHp, 0);
         setHp(remainingHp);
 
@@ -67,7 +66,6 @@ public abstract class GameEntity {
         }
     }
 
-    // Getters and Setters
     public double getX() {return x.get();}
     public double getY() {return y.get();}
     public double getHp() {return hp.get();}

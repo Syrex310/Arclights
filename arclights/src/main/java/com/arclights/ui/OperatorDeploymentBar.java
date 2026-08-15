@@ -1,6 +1,14 @@
 package com.arclights.ui;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import com.arclights.models.OperatorCatalog;
+import com.arclights.models.PlayerProgress;
+
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -12,77 +20,127 @@ import javafx.scene.shape.Rectangle;
 
 public class OperatorDeploymentBar {
 
+    private static final double CARD_SIZE = 90;
+
     private final HBox rootContainer;
-    private Pane sniperGroup;
-    private Pane defenderGroup;
+    private final HBox cardsDeck;
+    private final Label dpLabel;
+
+    private final Map<String, Pane> cardsByOperatorId = new LinkedHashMap<>();
 
     public OperatorDeploymentBar(String levelName) {
         rootContainer = new HBox();
-        
-        rootContainer.setLayoutX(UILoader.WINDOW_WIDTH - 91 * 2);
-        rootContainer.setLayoutY(UILoader.WINDOW_HEIGHT - 90);
+        rootContainer.setLayoutY(UILoader.WINDOW_HEIGHT - 90 - 35);
         rootContainer.setPrefHeight(90);
 
         VBox infoBox = new VBox(1);
 
-        sniperGroup = createOperatorCard("/com/arclights/char/char_124_kroos_sale#14 #15005.png", Color.web("#4caf50"));
-        defenderGroup = createOperatorCard("/com/arclights/char/char_122_beagle_boc#1 #15657.png", Color.web("#2196f3"));
+        dpLabel = new Label("DP: 0 / 0");
+        dpLabel.setStyle(
+            "-fx-text-fill: #ffffff; " +
+            "-fx-font-weight: bold; " +
+            "-fx-font-size: 16px; " +
+            "-fx-background-color: rgba(0, 0, 0, 0.55); " +
+            "-fx-padding: 6px 12px;"
+        );
+        dpLabel.setPadding(new Insets(0, 0, 4, 0));
+        infoBox.getChildren().add(dpLabel);
+        infoBox.setAlignment(Pos.BOTTOM_RIGHT);
 
-        HBox cardsDeck = new HBox(sniperGroup, defenderGroup);
+        cardsDeck = new HBox();
         cardsDeck.setAlignment(Pos.BOTTOM_RIGHT);
+        rebuildCards();
 
-        rootContainer.getChildren().addAll(infoBox, cardsDeck);
+        VBox cardsDP = new VBox(infoBox, cardsDeck);
+
+        rootContainer.getChildren().addAll(cardsDP);
     }
 
-    private Pane createOperatorCard(String imagePath, Color themeColor) {
-        double size = 90;
+    /**
+     * (Re)builds the deployment cards from every operator the player
+     * currently owns (starter operators + anything recruited in the shop),
+     * in catalog order. Also repositions the bar so it stays right-aligned
+     * no matter how many cards are shown.
+     */
+    private void rebuildCards() {
+        cardsDeck.getChildren().clear();
+        cardsByOperatorId.clear();
 
+        for (OperatorCatalog.Definition def : OperatorCatalog.all()) {
+            if (!PlayerProgress.ownsOperator(def.id)) continue;
+            Pane card = createOperatorCard(def);
+            cardsByOperatorId.put(def.id, card);
+            cardsDeck.getChildren().add(card);
+        }
+
+        int cardCount = Math.max(1, cardsByOperatorId.size());
+        rootContainer.setLayoutX(UILoader.WINDOW_WIDTH - CARD_SIZE * cardCount - 1 * cardCount);
+    }
+
+    private Pane createOperatorCard(OperatorCatalog.Definition def) {
         StackPane cardRoot = new StackPane();
-        cardRoot.setPrefSize(size, size);
-        cardRoot.setMaxSize(size, size);
+        cardRoot.setPrefSize(CARD_SIZE, CARD_SIZE);
+        cardRoot.setMaxSize(CARD_SIZE, CARD_SIZE);
         cardRoot.setStyle("-fx-cursor: hand;");
 
-        Rectangle border = new Rectangle(size, size);
+        Rectangle border = new Rectangle(CARD_SIZE, CARD_SIZE);
         border.setFill(Color.web("#1e232a"));
         border.setStroke(Color.web("#ffffff"));
         border.setStrokeWidth(1.5);
         border.setOpacity(0.2);
 
-        Image img = UILoader.loadImage(imagePath);
+        Image img = UILoader.loadImage(def.portraitPath);
         ImageView portrait = new ImageView();
         if (img != null) {
             portrait.setImage(img);
-            portrait.setFitWidth(size - 8);
-            portrait.setFitHeight(size - 8);
+            portrait.setFitWidth(CARD_SIZE - 8);
+            portrait.setFitHeight(CARD_SIZE - 8);
             portrait.setPreserveRatio(true);
         } else {
-            // Fallback square color block if image doesn't exist yet
-            Rectangle placeholder = new Rectangle(size - 10, size - 10, themeColor);
+            Rectangle placeholder = new Rectangle(CARD_SIZE - 10, CARD_SIZE - 10, def.cardColor);
             cardRoot.getChildren().add(placeholder);
         }
 
-        cardRoot.getChildren().addAll(border, portrait);
+        Label costLabel = new Label(String.valueOf(def.deployCost));
+        costLabel.setStyle(
+            "-fx-text-fill: #ffffff; " +
+            "-fx-font-weight: bold; " +
+            "-fx-font-size: 13px; " +
+            "-fx-background-color: rgba(0, 0, 0, 0.65); " +
+            "-fx-padding: 1px 5px; " +
+            "-fx-background-radius: 3px;"
+        );
+        StackPane.setAlignment(costLabel, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(costLabel, new Insets(0, 3, 3, 0));
 
-        cardRoot.setOnMouseEntered(e -> {
-
-        });
-
-        cardRoot.setOnMouseExited(e -> {
-
-        });
-
+        cardRoot.getChildren().addAll(border, portrait, costLabel);
         return cardRoot;
+    }
+
+    /**
+     * Refreshes the DP counter and dims any operator card the player can no
+     * longer afford, mirroring Arknights' deployment-cost feedback.
+     */
+    public void updateDeploymentPoints(int currentDP, int maxDP) {
+        dpLabel.setText("DP: " + currentDP + " / " + maxDP);
+        for (Map.Entry<String, Pane> entry : cardsByOperatorId.entrySet()) {
+            OperatorCatalog.Definition def = OperatorCatalog.get(entry.getKey());
+            boolean affordable = def != null && currentDP >= def.deployCost;
+            setCardAffordable(entry.getValue(), affordable);
+        }
+    }
+
+    private void setCardAffordable(Pane card, boolean affordable) {
+        card.setOpacity(affordable ? 1.0 : 0.4);
+        card.setStyle(affordable ? "-fx-cursor: hand;" : "-fx-cursor: default;");
     }
 
     public HBox getRoot() {
         return rootContainer;
     }
 
-    public Pane getSniperGroup() {
-        return sniperGroup;
-    }
-
-    public Pane getDefenderGroup() {
-        return defenderGroup;
+    /** Operator id -> its card node, for every operator currently shown in the bar. */
+    public Map<String, Pane> getOperatorCards() {
+        return cardsByOperatorId;
     }
 }

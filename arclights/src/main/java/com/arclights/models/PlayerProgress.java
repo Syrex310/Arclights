@@ -1,0 +1,173 @@
+package com.arclights.models;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
+/**
+ * App-wide player progress tracker: crystal currency + which stages have
+ * been cleared before (for first-clear vs repeat-clear rewards).
+ *
+ * Persisted to a small properties file under the user's home directory
+ * (~/.arclights/save.properties), loaded once on class init and re-saved
+ * every time progress changes. crystalsProperty() is a real JavaFX
+ * property so any screen (e.g. StartMenu) can bind a Label's text to it
+ * and get live updates for free.
+ */
+public class PlayerProgress {
+
+    private static final Path SAVE_DIR = Paths.get(System.getProperty("user.home"), ".arclights");
+    private static final Path SAVE_FILE = SAVE_DIR.resolve("save.properties");
+
+    private static final String CLEARED_STAGES_DELIMITER = "|";
+    private static final String OWNED_OPERATORS_DELIMITER = "|";
+
+    private static final IntegerProperty crystals = new SimpleIntegerProperty(0);
+    private static final Set<String> clearedStages = new HashSet<>();
+    private static final Set<String> ownedOperators = new HashSet<>();
+
+    static {
+        load();
+        ensureStarterOperators();
+    }
+
+    private PlayerProgress() {
+    }
+
+    public static IntegerProperty crystalsProperty() { return crystals; }
+    public static int getCrystals() { return crystals.get(); }
+
+    public static void addCrystals(int amount) {
+        if (amount == 0) return;
+        crystals.set(Math.max(0, crystals.get() + amount));
+        save();
+    }
+
+    /** Returns true if the player has recruited this operator. */
+    public static boolean ownsOperator(String operatorId) {
+        return operatorId != null && ownedOperators.contains(operatorId);
+    }
+
+    /** Returns a snapshot of all recruited operator IDs. */
+    public static Set<String> getOwnedOperators() {
+        return new HashSet<>(ownedOperators);
+    }
+
+    /**
+     * Purchases an operator with crystals. Returns false when the operator is
+     * already owned or there are not enough crystals.
+     */
+    public static boolean purchaseOperator(String operatorId, int cost) {
+        if (operatorId == null || ownedOperators.contains(operatorId) || cost < 0) {
+            return false;
+        }
+        if (crystals.get() < cost) {
+            return false;
+        }
+
+        crystals.set(crystals.get() - cost);
+        ownedOperators.add(operatorId);
+        save();
+        return true;
+    }
+
+    /** True if this stage (keyed by its display name, e.g. "1-1 Main Corridor") has never been cleared. */
+    public static boolean isFirstClear(String stageId) {
+        return stageId != null && !clearedStages.contains(stageId);
+    }
+
+    public static boolean hasCleared(String stageId) {
+        return stageId != null && clearedStages.contains(stageId);
+    }
+
+    /** Marks a stage as cleared. Idempotent; only writes to disk if this actually changed something. */
+    public static void markCleared(String stageId) {
+        if (stageId != null && clearedStages.add(stageId)) {
+            save();
+        }
+    }
+
+    /**
+     * Grants every player the two starter operators (Sniper + Defender) for
+     * free, so they always show up in the deployment bar exactly like
+     * before, while the remaining operators still have to be recruited in
+     * the shop. Idempotent; only writes to disk if this actually changed
+     * something (i.e. once, the first time a player's save is touched).
+     */
+    private static void ensureStarterOperators() {
+        boolean changed = false;
+        for (String operatorId : com.arclights.models.OperatorCatalog.STARTER_OPERATOR_IDS) {
+            if (ownedOperators.add(operatorId)) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            save();
+        }
+    }
+
+    /** Loads saved progress from disk, if a save file exists. Silently falls back to defaults on any failure. */
+    private static void load() {
+        if (!Files.isReadable(SAVE_FILE)) return;
+
+        Properties props = new Properties();
+        try (InputStream in = Files.newInputStream(SAVE_FILE)) {
+            props.load(in);
+        } catch (IOException e) {
+            System.err.println("PlayerProgress: failed to read save file, starting fresh (" + e.getMessage() + ")");
+            return;
+        }
+
+        try {
+            crystals.set(Integer.parseInt(props.getProperty("crystals", "0")));
+        } catch (NumberFormatException e) {
+            crystals.set(0);
+        }
+
+        clearedStages.clear();
+        String cleared = props.getProperty("clearedStages", "");
+        if (!cleared.isBlank()) {
+            for (String stageId : cleared.split("\\Q" + CLEARED_STAGES_DELIMITER + "\\E")) {
+                if (!stageId.isBlank()) {
+                    clearedStages.add(stageId);
+                }
+            }
+        }
+
+        ownedOperators.clear();
+        String owned = props.getProperty("ownedOperators", "");
+        if (!owned.isBlank()) {
+            for (String operatorId : owned.split("\\Q" + OWNED_OPERATORS_DELIMITER + "\\E")) {
+                if (!operatorId.isBlank()) {
+                    ownedOperators.add(operatorId);
+                }
+            }
+        }
+    }
+
+    /** Persists current progress to disk. Silently no-ops on failure (e.g. read-only filesystem). */
+    private static void save() {
+        Properties props = new Properties();
+        props.setProperty("crystals", String.valueOf(crystals.get()));
+        props.setProperty("clearedStages", String.join(CLEARED_STAGES_DELIMITER, clearedStages));
+        props.setProperty("ownedOperators", String.join(OWNED_OPERATORS_DELIMITER, ownedOperators));
+
+        try {
+            Files.createDirectories(SAVE_DIR);
+            try (OutputStream out = Files.newOutputStream(SAVE_FILE)) {
+                props.store(out, "Arclights save data - auto-generated, do not edit by hand");
+            }
+        } catch (IOException e) {
+            System.err.println("PlayerProgress: failed to save progress (" + e.getMessage() + ")");
+        }
+    }
+}
