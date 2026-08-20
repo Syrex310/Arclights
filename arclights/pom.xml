@@ -27,6 +27,7 @@
         </dependency>
     </dependencies>
     <build>
+        <finalName>arclights</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -50,6 +51,52 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- MỚI: đóng gói toàn bộ app + thư viện thành 1 file arclights.jar
+                 Dùng Launcher.java (không extends Application) làm main class
+                 để tránh lỗi "JavaFX runtime components are missing" khi
+                 chạy trực tiếp bằng java -jar. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.arclights.Launcher</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- MỚI: từ arclights.jar ở trên, tạo file thực thi native
+                 (.exe/.msi trên Windows, .dmg trên macOS, .deb/.rpm trên Linux).
+                 Chạy: mvn clean package  rồi  mvn jpackage:jpackage
+                 LƯU Ý: cần JDK 14 trở lên để CHẠY lệnh jpackage (bản thân
+                 tool jpackage chỉ có từ JDK 14+), dù code vẫn compile ở
+                 mức 11. Nếu máy bạn chỉ có JDK 11, cần cài thêm JDK 17/21
+                 và trỏ JAVA_HOME sang đó khi chạy lệnh này. -->
+            <plugin>
+                <groupId>org.panteleyev</groupId>
+                <artifactId>jpackage-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <name>Arclights</name>
+                    <appVersion>1.0.0</appVersion>
+                    <vendor>Arclights Team</vendor>
+                    <destination>target/dist</destination>
+                    <input>target</input>
+                    <mainJar>arclights.jar</mainJar>
+                    <mainClass>com.arclights.Launcher</mainClass>
+                    <type>APP_IMAGE</type>
+                </configuration>
             </plugin>
         </plugins>
     </build>
