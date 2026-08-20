@@ -1,6 +1,7 @@
 # Arclights
 
 Thể loại: Thủ thành (tower-defense) viết bằng Java + JavaFX, lấy cảm hứng từ Arknights: người chơi triển khai các **Operator** (Vanguard, Guard, Defender, Sniper, Caster, Medic, Supporter, Specialist) lên bản đồ dạng lưới để chặn và tiêu diệt các đợt quái (**Enemy**) trước khi chúng đến điểm đích
+Video demo: https://youtu.be/z0lKXZYDRsI
 
 ## Tính năng chính
 
@@ -29,20 +30,15 @@ Yêu cầu: JDK 17+, Maven 3.8+.
 
 ```bash
 # 1. Clone project
-git clone <link-repo-github-cua-ban>
+git clone https://github.com/Syrex310/Arclights
 cd arclights
 
-# 2. Chạy thử trực tiếp (không cần đóng gói)
+# 2. Chạy thử trực tiếp
 mvn javafx:run
 
 # 3. Đóng gói thành fat-jar
 mvn clean package
-# -> sinh ra target/arclights.jar
-
-# 4. (tuỳ chọn) Tạo file cài đặt/app image native
-mvn jpackage:jpackage
-# -> sinh ra target/dist/Arclights (hoặc .exe/.dmg/.deb tuỳ hệ điều hành)
-```
+# -> tạo target/arclights.jar
 
 ## Cấu trúc thư mục
 
@@ -61,7 +57,6 @@ src/main/java/com/arclights/
 └── ui/                     # StartMenu, ShopMenu, MapRenderer, các panel UI khác
 ```
 
-## Hướng dẫn cài đặt
+## Bản quyền tài nguyên (asset credits)
 
-1. Tải file build tương ứng với hệ điều hành
-2. Giải nén (nếu là app image) và chạy file thực thi/chạy `java -jar arclights.jar` nếu dùng jar
+Toàn bộ hình ảnh nhân vật/portrait, sprite, background và một số hiệu ứng UI trong dự án được lấy từ game **Arknights** (bản quyền thuộc **Hypergryph / Studio Montagne**, phát hành bởi **Yostar**). Đây là dự án học thuật, phi thương mại, chỉ nhằm mục đích minh hoạ kỹ thuật lập trình game trong khuôn khổ bài tập lớn môn học, không dùng để phân phối hay thu lợi nhuận. Toàn bộ quyền sở hữu trí tuệ đối với các asset gốc thuộc về chủ sở hữu bản quyền tương ứng
