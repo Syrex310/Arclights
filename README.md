@@ -1,7 +1,7 @@
 # Arclights
 
-Thể loại: Thủ thành (tower-defense) viết bằng Java + JavaFX, lấy cảm hứng từ Arknights: người chơi triển khai các **Operator** (Vanguard, Guard, Defender, Sniper, Caster, Medic, Supporter, Specialist) lên bản đồ dạng lưới để chặn và tiêu diệt các đợt quái (**Enemy**) trước khi chúng đến điểm đích
-Video demo: https://youtu.be/z0lKXZYDRsI
+**Thể loại: Thủ thành (tower-defense) viết bằng Java + JavaFX, lấy cảm hứng từ Arknights: người chơi triển khai các **Operator** (Vanguard, Guard, Defender, Sniper, Caster, Medic, Supporter, Specialist) lên bản đồ dạng lưới để chặn và tiêu diệt các đợt quái (**Enemy**) trước khi chúng đến điểm đích
+**Video demo: https://youtu.be/z0lKXZYDRsI
 
 ## Tính năng chính
 
@@ -39,6 +39,7 @@ mvn javafx:run
 # 3. Đóng gói thành fat-jar
 mvn clean package
 # -> tạo target/arclights.jar
+```
 
 ## Cấu trúc thư mục
 
